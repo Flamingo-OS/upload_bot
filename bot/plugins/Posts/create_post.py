@@ -63,7 +63,7 @@ async def create_post(client, message):
 
     Maintainers: {maintainer_str}
 
-    Device: {re.sub("[A-Za-z]+", lambda ele: " " + ele[0].capitalize() + " ", device)}
+    Device: {device.capitalize()}
     Date: {datetime.today().strftime('%d-%m-%y')}
 
     {download_link_str}
