@@ -68,7 +68,7 @@ async def create_post(client, message):
 
     {download_link_str}
 
-    [Changelog](https://raw.githubusercontent.com/FlamingoOS-devices/ota/A12.1/{device}/changelog_{datetime.today().strftime('%Y_%m_%d')})
+    [Changelog](https://raw.githubusercontent.com/FlamingoOS-Devices/ota/main/{device}/changelog_{datetime.today().strftime('%Y_%m_%d')})
 
     Support group
     
