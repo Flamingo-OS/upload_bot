@@ -7,6 +7,7 @@ from bot.constants import BASE_URL
 
 from bot.utils.logging import logger
 
+
 def find_device(file_name: str) -> str:
     logger.info(f"Recieved request to find a device for {file_name}")
 
@@ -14,6 +15,7 @@ def find_device(file_name: str) -> str:
     device_name = parts[1]
     logger.info(f"It was parsed as {device_name}")
     return device_name
+
 
 def parse_post_links(links: List[str]) -> dict:
     logger.info("Parsing links for post generation")
@@ -31,17 +33,18 @@ def parse_post_links(links: List[str]) -> dict:
 
         if "sourceforge.net" in link:
             link_split_number = -2
-            
+
         if BASE_URL in link or "sourceforge.net" in link:
             file_name = link.split("/")[link_split_number]
             logger.info(file_name)
             for item in parsed_links:
-                if file_name.endswith(f"-{item}.zip"):
+                if f"-{item}" in file_name:
                     parsed_links[item].append(link)
                     break
 
     logger.info(f"The links were parsed as {parsed_links}")
     return parsed_links
+
 
 def find_kosp_ver(url: str) -> str:
     logger.info(f"Recieved request to find a Flamingo version for {url}")
