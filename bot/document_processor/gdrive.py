@@ -86,7 +86,6 @@ class GDrive(DocumentProccesor):
 
         except Exception as e:
             logger.error("Build failed to download as", e)
-            await self.message.edit_text("Download failed")
         return None
 
     def __parse_url__(self, url: str) -> str:

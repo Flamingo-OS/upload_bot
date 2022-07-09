@@ -20,7 +20,7 @@ class DirectLink(DocumentProccesor):
         logger.info("Downloading file from direct link")
         local_filename: str = ""
         for part in url.split('/'):
-            if "KOSP" in part and "OFFICIAL" in part:
+            if "Flamingo" and "OFFICIAL" in part:
                 local_filename = part
                 break
         device: str = find_device(local_filename)
@@ -74,7 +74,6 @@ class DirectLink(DocumentProccesor):
             with open(TEMP_FOLDER_PATH + local_filename, "wb") as f:
                 f.write(data)
         except:
-            await self.message.edit_text("Failed to download the file")
             return None
 
         return local_filename
