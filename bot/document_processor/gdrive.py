@@ -36,8 +36,7 @@ class GDrive(DocumentProccesor):
         logger.info("Starting download from gdrive")
 
         file_id = self.__parse_url__(url)
-
-        logger.info(f"File i recieved from url is {file_id}")
+        logger.info(f"File id recieved from url is {file_id}")
 
         try:
 
@@ -85,19 +84,12 @@ class GDrive(DocumentProccesor):
             return local_filename
 
         except Exception as e:
-            logger.exception(e)
+            logger.error("Build failed to download as", e)
             await self.message.edit_text("Download failed")
         return None
 
     def __parse_url__(self, url: str) -> str:
-        url = url.replace("https://drive.google.com/", "")
-        file_id: str = ""
-        if "file/d/" in url:
-            url = url.replace("file/d/","")
-            file_id = url.split("/")[0]
-        elif "uc?id" in url:
-            url = url.replace("uc?id=", "")
-            file_id = url.replace("&export=download", "")
-       
-        logger.info(f"Parsed url is {file_id}")
-        return file_id
+        id: str = url.split("/")[5]
+        if id.startswith("uc?id="):
+            id = id.replace("uc?id=", "").replace("&export=download", "")
+        return id

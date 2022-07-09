@@ -31,11 +31,12 @@ async def download(client, message):
 
         file_name: str = await handler.download(message.from_user.id,
                                                 download_url)
+        if not file_name:
+            raise Exception("File name is empty")
         logger.info(f"Downloaded file at {file_name}")
         await replied_message.edit_text("Downloaded file at " + file_name)
 
     except Exception as e:
-
         logger.exception(e)
         await replied_message.edit_text(
             "Download failed.\nPlease check the link and try again")
