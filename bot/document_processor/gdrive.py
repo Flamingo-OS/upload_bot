@@ -46,7 +46,8 @@ class GDrive(DocumentProccesor):
             drive_service = build('drive', 'v3', credentials=credentials)
             drive = drive_service.files()
             drive_file = drive.get(fileId=file_id,
-                                   fields='name,size').execute()
+                                   fields='name,size',
+                                   supportsAllDrives=True).execute()
             local_filename = drive_file['name']
 
             device: str = find_device(local_filename)
