@@ -1,10 +1,9 @@
 # Thanks to sukionotes for parts of this code
 
-import asyncio
 import time
 from datetime import timedelta
-from pyrogram.errors import FloodWait, MessageNotModified
-from bot.utils.logging import logger
+from pyrogram.errors import MessageNotModified
+from bot.utils.messaging import edit_message
 
 progress_callback_data = dict()
 
@@ -82,13 +81,10 @@ async def progress_callback(
 <b>ETA:</b> {calculate_eta(current, total, start_time)}'''
         if prevtext != text:
             try:
-                await message.edit_text(text)
+                await edit_message(message, text)
                 prevtext = text
                 last_edit_time = time.time()
                 progress_callback_data[
                     message_identifier] = last_edit_time, prevtext, start_time
-            except FloodWait as e:
-                logger.error(f"Floodwait: Sleeping for {e.value} seconds")
-                await asyncio.sleep(e.value)
             except (MessageNotModified):
                 pass

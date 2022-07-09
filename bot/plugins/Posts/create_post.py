@@ -8,6 +8,7 @@ from pyrogram.errors import FloodWait
 from bot import CHANNEL_ID
 from bot.database.maintainer_details import maintainer_details
 from bot.utils.logging import logger
+from bot.utils.messaging import reply_message
 from bot.utils.parser import find_device, find_kosp_ver, parse_post_links
 
 banner_photos = [
@@ -29,12 +30,12 @@ async def create_post(client, message):
 
     try:
         if len(message.command) < 2:
-            await message.reply_text("Feed me the links senpai")
+            await reply_message(message, "Feed me the links senpai")
             return
 
         if not maintainer_details.is_maintainer_or_admin(message.from_user.id):
-            await message.reply_text(
-                "You are not a maintainer, you can't create a post")
+            await reply_message(message,
+                                "You are not a maintainer, you can't create a post")
             return
 
         parsed_links: dict = parse_post_links(message.command[1:])
@@ -110,7 +111,9 @@ async def create_post(client, message):
     except FloodWait as e:
         logger.error(f"Floodwait: Sleeping for {e.value} seconds")
         await asyncio.sleep(e.value)
+        await client.send_message(chat_id=CHANNEL_ID, text=caption),
+        await client.send_message(chat_id=message.chat.id, text=caption),
 
     except:
-        await message.reply_text("Something went wrong")
+        await reply_message(message, "Something went wrong")
         return
