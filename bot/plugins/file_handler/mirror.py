@@ -48,7 +48,7 @@ async def mirror(client, message):
             logger.info(f"Uploaded file at {url}")
             mirrored_url.append(url)
 
-        shutil.rmtree(TEMP_FOLDER_PATH)
+        # shutil.rmtree(TEMP_FOLDER_PATH)
         await replied_message.delete()
         reply_text = f"Successfully uploaded file. you can find it at "
         for url in mirrored_url:

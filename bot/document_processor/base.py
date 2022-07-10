@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+import hashlib
 from typing import List
 from graph_onedrive import OneDrive
 from bot import CLIENT_ID_ONEDRIVE, CLIENT_SECRET, TENANT, REFRESH_TOKEN
@@ -38,6 +39,8 @@ class DocumentProccesor(ABC):
             file_path: The path of the file to be uploaded.
             folder_id: The id of the folder where the file will be uploaded.
         """
+        logger.info("Starting upload to onedrive")
+        sha5sum_file: str = await self.__find_sha5_sum__(file_name)
 
         # Upload path of the final file
         device = find_device(file_name)
@@ -86,7 +89,15 @@ class DocumentProccesor(ABC):
                 parent_folder_id = dest_folder_id
 
             # Upload the file
-            new_file_id = await my_drive.upload_file(
+            await my_drive.upload_file(
+                file_path=TEMP_FOLDER_PATH + sha5sum_file,
+                parent_folder_id=dest_folder_id,
+                if_exists="replace",
+                chunk_size=1024 * 1024 * 40,
+                verbose=False,
+                callback=self.__callback__)
+
+            await my_drive.upload_file(
                 file_path=TEMP_FOLDER_PATH + file_name,
                 parent_folder_id=dest_folder_id,
                 if_exists="replace",
@@ -110,3 +121,25 @@ class DocumentProccesor(ABC):
                                     "Uploading file...")
         except Exception as e:
             raise Exception("Something went wrong")
+
+    async def __find_sha5_sum__(self, file_name: str) -> str:
+        """Finds the sha5 sum of the given file.
+        Args:
+            file_path: The path of the file to find the sha5 sum of.
+        """
+        logger.info(f"Finding sha5 sum of file, {file_name}")
+        BUF_SIZE = 65536  # lets read stuff in 64kb chunks!
+
+        sha1 = hashlib.sha1()
+
+        with open(TEMP_FOLDER_PATH + file_name, 'rb') as f:
+            while True:
+                data = f.read(BUF_SIZE)
+                if not data:
+                    break
+                sha1.update(data)
+
+        with open(TEMP_FOLDER_PATH + file_name + ".sha5sum", 'w') as f:
+            f.write(sha1.hexdigest())
+
+        return file_name + ".sha5sum"
