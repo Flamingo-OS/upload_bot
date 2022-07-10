@@ -64,6 +64,10 @@ async def create_post(client, message):
 
         flamingo_version = find_kosp_ver(message.command[1])
 
+        if not download_link_str:
+            await reply_message(message, "Failed to find the download links")
+            return
+
         caption = f"""
         Flamingo OS {flamingo_version} | Android 12.1 | OFFICIAL
 

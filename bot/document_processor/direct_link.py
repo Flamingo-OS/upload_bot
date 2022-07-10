@@ -20,9 +20,11 @@ class DirectLink(DocumentProccesor):
         logger.info("Downloading file from direct link")
         local_filename: str = ""
         for part in url.split('/'):
-            if "Flamingo" and "OFFICIAL" in part:
+            if "Flamingo" and "Official" in part:
                 local_filename = part
                 break
+        if not local_filename:
+            raise Exception("Failed to find the file name")
         device: str = find_device(local_filename)
 
         try:
