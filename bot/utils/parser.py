@@ -1,7 +1,6 @@
 # Parses the given file name to the folder it should go to
 # It is assumed that file given through here will always be a KOSP file
 
-from fileinput import filename
 from typing import List
 from bot.constants import BASE_URL
 
@@ -50,3 +49,7 @@ def find_kosp_ver(url: str) -> str:
     logger.info(f"Recieved request to find a Flamingo version for {url}")
 
     return url.split("/")[-1].split("-")[1]
+
+
+def is_build_vanilla(file_name: str) -> bool:
+    return "Vanilla" in file_name

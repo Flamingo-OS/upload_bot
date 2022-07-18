@@ -6,7 +6,7 @@ from bot import CLIENT_ID_ONEDRIVE, CLIENT_SECRET, TENANT, REFRESH_TOKEN
 from bot.constants import BASE_URL, TEMP_FOLDER_PATH
 from bot.database import maintainer_details
 
-from bot.utils.parser import find_device
+from bot.utils.parser import find_device, is_build_vanilla
 from bot.utils.progress import progress_callback
 from bot.utils.logging import logger
 
@@ -44,7 +44,8 @@ class DocumentProccesor(ABC):
 
         # Upload path of the final file
         device = find_device(file_name)
-        file_upload_path = "flamingo/A12.1/" + device
+        file_upload_path = "flamingo/A12.1/" + device + \
+            "/Vanilla" if is_build_vanilla(file_name) else "/Gapps"
 
         try:
             # Use the context manager to manage a session instance
