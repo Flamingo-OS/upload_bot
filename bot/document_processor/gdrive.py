@@ -89,7 +89,6 @@ class GDrive(DocumentProccesor):
         return None
 
     def __parse_url__(self, url: str) -> str:
-        id: str = url.split("/")[5]
-        if id.startswith("uc?id="):
-            id = id.replace("uc?id=", "").replace("&export=download", "")
-        return id
+        if "uc?id=" in url:
+            return url.split("/")[3].replace("uc?id=", "").split("&")[0]
+        return url.split("/")[5]
