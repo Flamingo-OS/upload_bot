@@ -16,13 +16,18 @@ async def mirror(client, message):
     logger.info("God asked me to mirror something")
 
     try:
-        if (len(message.command) == 1):
+        if (len(message.command) == 1) and not message.reply_to_message:
             logger.info("No download URL were provided")
             await reply_message(message,
                                 "No download link was provided.\nPlease provide one")
             return
 
-        download_urls: List[str] = message.command[1:]
+        if message.reply_to_message:
+            download_urls: List[str] = message.reply_to_message.text.split(
+                "\n")
+        else:
+            download_urls: List[str] = message.command[1:]
+
         logger.info(f"Found download url as {download_urls}")
         replied_message = await reply_message(message, "Starting the download for you")
         mirrored_url: List[str] = []
