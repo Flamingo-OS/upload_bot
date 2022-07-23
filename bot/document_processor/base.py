@@ -45,7 +45,7 @@ class DocumentProccesor(ABC):
         # Upload path of the final file
         device = find_device(file_name)
         file_upload_path = "flamingo/A12.1/" + device + \
-            "/Vanilla" if is_build_vanilla(file_name) else "/Gapps"
+            "/Vanilla" if is_build_vanilla(file_name) else "/GApps"
 
         try:
             # Use the context manager to manage a session instance
