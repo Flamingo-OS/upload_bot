@@ -9,7 +9,7 @@ from bot import CHANNEL_ID
 from bot.database.maintainer_details import maintainer_details
 from bot.utils.logging import logger
 from bot.utils.messaging import reply_message
-from bot.utils.parser import find_device, find_kosp_ver, parse_post_links
+from bot.utils.parser import find_device, find_kosp_ver, is_build_vanilla, parse_post_links
 
 banner_photos = [
     {
@@ -64,12 +64,14 @@ async def create_post(client, message):
 
         flamingo_version = find_kosp_ver(message.command[1])
 
+        is_vanilla = is_build_vanilla(message.command[1])
+
         if not download_link_str:
             await reply_message(message, "Failed to find the download links")
             return
 
         caption = f"""
-        Flamingo OS {flamingo_version} | Android 12.1 | OFFICIAL
+        Flamingo OS {flamingo_version} | Android 12.1 | OFFICIAL | {"VANILLA" if is_vanilla else "GAPPS"}
 
         Maintainers: {maintainer_str}
 

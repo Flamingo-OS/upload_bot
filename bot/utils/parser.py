@@ -52,4 +52,6 @@ def find_kosp_ver(url: str) -> str:
 
 
 def is_build_vanilla(file_name: str) -> bool:
+    logger.info(
+        f"Recieved request to find whether build is vanilla for file: {file_name}")
     return "Vanilla" in file_name
