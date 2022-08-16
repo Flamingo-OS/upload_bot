@@ -1,5 +1,5 @@
 # Flamingo Upload Bot
-A Telegram bot (based on [Pyrogram](https://docs.pyrogram.org/)) to mirror and upload files from any direct link or a gdrive link to our [hosted website](http://flamingo.e11z.net).
+A Telegram bot (based on [Pyrogram](https://docs.pyrogram.org/)) to mirror and upload files from any direct link or a gdrive link to our [hosted website](https://downloads.e11z.net/flamingo/).
 
 ## Setup virtual environment
 
