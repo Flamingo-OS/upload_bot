@@ -109,7 +109,7 @@ class DocumentProccesor(ABC):
                 verbose=False,
                 callback=self.__callback__)
 
-            url: str = BASE_URL + "d/" + file_upload_path.replace(
+            url: str = BASE_URL.replace("flamingo", "d/flamingo") + file_upload_path.replace(
                 "flamingo/", "") + "/" + file_name
             return url
         except:

@@ -33,14 +33,19 @@ def parse_post_links(links: List[str]) -> dict:
         if "sourceforge.net" in link:
             link_split_number = -2
 
-        file_name = link.split("/")[link_split_number]
-        logger.info(file_name)
-        for item in parsed_links:
-            if f"-{item}" in file_name:
-                parsed_links[item].append(link)
-                break
+        if BASE_URL.replace("/flamingo") in link:
+            file_name = link.split("/")[link_split_number]
+            logger.info(file_name)
+            for item in parsed_links:
+                if f"-{item}" in file_name:
+                    parsed_links[item].append(link)
+                    break
 
     logger.info(f"The links were parsed as {parsed_links}")
+
+    if not parsed_links:
+        raise Exception("No links were found")
+
     return parsed_links
 
 
