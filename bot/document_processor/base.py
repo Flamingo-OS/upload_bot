@@ -44,7 +44,7 @@ class DocumentProccesor(ABC):
 
         # Upload path of the final file
         device = find_device(file_name)
-        file_upload_path = "flamingo/A12.1/" + device
+        file_upload_path = "flamingo/A13/" + device
         file_upload_path += "/Vanilla" if is_build_vanilla(
             file_name) else "/GApps"
 
