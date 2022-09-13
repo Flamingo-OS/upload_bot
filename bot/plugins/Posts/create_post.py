@@ -62,7 +62,10 @@ async def create_post(client, message):
         device_support_group = maintainer_details.get_device_support_group(
             device)
 
-        flamingo_version = find_kosp_ver(message.command[1])
+        flamingo_version: str = find_kosp_ver(message.command[1])
+
+        android_version: int = int(
+            float(flamingo_version.replace("v", ""))) + 11
 
         is_vanilla = is_build_vanilla(message.command[1])
 
@@ -71,7 +74,7 @@ async def create_post(client, message):
             return
 
         caption = f"""
-        Flamingo OS {flamingo_version} | Android 12.1 | OFFICIAL | {"VANILLA" if is_vanilla else "GAPPS"}
+        Flamingo OS {flamingo_version} | Android {android_version} | OFFICIAL | {"VANILLA" if is_vanilla else "GAPPS"}
 
         Maintainers: {maintainer_str}
 
@@ -120,6 +123,7 @@ async def create_post(client, message):
         await client.send_message(chat_id=CHANNEL_ID, text=caption),
         await client.send_message(chat_id=message.chat.id, text=caption),
 
-    except:
+    except Exception as e:
+        logger.error(e)
         await reply_message(message, "Something went wrong")
         return
