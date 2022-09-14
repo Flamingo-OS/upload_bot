@@ -33,7 +33,7 @@ def parse_post_links(links: List[str]) -> dict:
         if "sourceforge.net" in link:
             link_split_number = -2
 
-        if BASE_URL.replace("/flamingo") in link:
+        if BASE_URL.replace("/flamingo", "") in link:
             file_name = link.split("/")[link_split_number]
             logger.info(file_name)
             for item in parsed_links:
