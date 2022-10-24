@@ -7,4 +7,5 @@ import (
 
 func Main(d *ext.Dispatcher) {
 	d.AddHandler(handlers.NewCommand("start", startHelper))
+	d.AddHandler(handlers.NewCommand("help", helpHandler))
 }
