@@ -11,7 +11,7 @@ type BotConfig struct {
 	BotToken string `json:"bot_token"`
 }
 
-func CreateBotConfig() *BotConfig {
+func NewBotConfig() *BotConfig {
 	return &BotConfig{}
 }
 

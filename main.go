@@ -13,7 +13,7 @@ func main() {
 	core.InitLogger()
 
 	// connect to tg
-	core.Config = core.CreateBotConfig()
+	core.Config = core.NewBotConfig()
 	core.Config.ReadConfig(FILENAME)
 	_, updater, err := core.BotInit(core.Config)
 	if err != nil {
