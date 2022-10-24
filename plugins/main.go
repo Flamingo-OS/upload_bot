@@ -6,6 +6,7 @@ import (
 )
 
 func Main(d *ext.Dispatcher) {
-	d.AddHandler(handlers.NewCommand("start", startHelper))
 	d.AddHandler(handlers.NewCommand("help", helpHandler))
+	d.AddHandler(handlers.NewCommand("ping", pingHandler))
+	d.AddHandler(handlers.NewCommand("start", startHelper))
 }
