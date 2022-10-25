@@ -86,3 +86,49 @@ func removeDevicesHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 
 	return err
 }
+
+func promoteAdminHandler(b *gotgbot.Bot, ctx *ext.Context) error {
+	chat := ctx.EffectiveChat
+	core.Log.Infoln("Recieved request to handle /add")
+
+	replyMessage := ctx.EffectiveMessage.ReplyToMessage
+	userId := ctx.EffectiveUser.Id
+	if replyMessage == nil {
+		_, e := b.SendMessage(chat.Id, "Reply to a message from the user you want to add as an admin.", &gotgbot.SendMessageOpts{})
+		return e
+	}
+
+	msg, err := b.SendMessage(chat.Id, "Promoting user", &gotgbot.SendMessageOpts{})
+
+	e := database.PromoteAdmin(userId)
+	if e != nil {
+		msg.EditText(b, "Something went wrong while promoting user", &gotgbot.EditMessageTextOpts{})
+	}
+
+	msg.EditText(b, "Successfully promoted user", &gotgbot.EditMessageTextOpts{})
+
+	return err
+}
+
+func demoteAdminHandler(b *gotgbot.Bot, ctx *ext.Context) error {
+	chat := ctx.EffectiveChat
+	core.Log.Infoln("Recieved request to handle /add")
+
+	replyMessage := ctx.EffectiveMessage.ReplyToMessage
+	userId := ctx.EffectiveUser.Id
+	if replyMessage == nil {
+		_, e := b.SendMessage(chat.Id, "Reply to a message from the user you want to add as an admin.", &gotgbot.SendMessageOpts{})
+		return e
+	}
+
+	msg, err := b.SendMessage(chat.Id, "Promoting user", &gotgbot.SendMessageOpts{})
+
+	e := database.DemoteAdmin(userId)
+	if e != nil {
+		msg.EditText(b, "Something went wrong while promoting user", &gotgbot.EditMessageTextOpts{})
+	}
+
+	msg.EditText(b, "Successfully promoted user", &gotgbot.EditMessageTextOpts{})
+
+	return err
+}
