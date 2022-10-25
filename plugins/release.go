@@ -63,6 +63,7 @@ func releaseHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 
 		if core.CancelTasks.GetCancelStatus(taskId.Uint64()) {
 			core.Log.Infoln("Release cancelled by user")
+			b.SendMessage(chat.Id, "Release cancelled by user", &gotgbot.SendMessageOpts{})
 			return nil
 		}
 	}
