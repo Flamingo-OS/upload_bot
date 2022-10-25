@@ -7,23 +7,22 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func GetDevices(userId int) []string {
+func GetDevices(userId int64) []string {
 	core.Log.Infoln("Getting devices...")
 	filter := bson.M{"user_id": userId}
-	var result bson.M
-	err := core.Collection.FindOne(context.TODO(), filter).Decode(&result)
+	var result Maintainers
+	err := core.Collection.FindOne(context.Background(), filter).Decode(&result)
 	if err != nil {
+		core.Log.Errorln(err)
 		return []string{}
 	}
-	core.Log.Infoln("The user's devices are", result["devices"])
-	devices := result["devices"].([]string)
-	return devices
+	return result.Devices
 }
 
-func RemoveDevice(userId int, device string) error {
+func RemoveDevice(userId int64, device string) error {
 	core.Log.Infoln("Removing device...")
 	filter := bson.M{"user_id": userId}
 	update := bson.M{"$pull": bson.M{"devices": device}}
-	_, err := core.Collection.UpdateOne(context.TODO(), filter, update)
+	_, err := core.Collection.UpdateOne(context.Background(), filter, update)
 	return err
 }
