@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"regexp"
 
 	"github.com/Flamingo-OS/upload-bot/core"
 	"golang.org/x/oauth2"
@@ -88,7 +89,13 @@ func downloadFile(d *drive.Service, t http.RoundTripper, f *drive.File) (string,
 	return directDownloader(downloadUrl, title, t)
 }
 
-func DownloadFileFromId(fileId string) (string, error) {
+func parseFileId(url string) string {
+	re, _ := regexp.Compile(`[-\w]{25,}`)
+	return re.FindString(url)
+}
+
+func DownloadFileFromId(url string) (string, error) {
+	fileId := parseFileId(url)
 	f, err := getFileFromId(core.DriveService, fileId)
 	if err != nil {
 		core.Log.Errorf("An error occurred: %v\n", err)
