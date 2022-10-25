@@ -10,7 +10,7 @@ import (
 )
 
 const dbName = "kosp"
-const colName = "maintainers"
+const colName = "maintainer"
 
 type Maintainers struct {
 	Id             primitive.ObjectID `bson:"_id"`

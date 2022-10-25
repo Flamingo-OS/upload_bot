@@ -49,12 +49,11 @@ func removeMaintainerHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	core.Log.Infoln("Recieved request to handle /remove")
 
 	replyMessage := ctx.EffectiveMessage.ReplyToMessage
-	if replyMessage == nil {
-		_, e := b.SendMessage(chat.Id, "Reply to a message from the user you want to add as maintainer.", &gotgbot.SendMessageOpts{})
-		return e
+	userId := ctx.EffectiveUser.Id
+	if replyMessage != nil {
+		userId = replyMessage.From.Id
 	}
 	msg, err := b.SendMessage(chat.Id, "Removing the maintainer", &gotgbot.SendMessageOpts{})
-	userId := replyMessage.From.Id
 
 	e := database.RemoveMaintainer(userId)
 	if e != nil {
