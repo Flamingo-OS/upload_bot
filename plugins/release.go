@@ -6,6 +6,7 @@ import (
 	"math/big"
 
 	"github.com/Flamingo-OS/upload-bot/core"
+	"github.com/Flamingo-OS/upload-bot/documents"
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 )
@@ -27,6 +28,18 @@ func releaseHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	fmt.Println(core.CancelTasks)
 
 	msgTxt := fmt.Sprintf("Starting release process...\nYou can cancel using `/cancel %d`", taskId.Uint64())
-	_, e := b.SendMessage(chat.Id, msgTxt, &gotgbot.SendMessageOpts{ParseMode: "markdown"})
+	m, e := b.SendMessage(chat.Id, msgTxt, &gotgbot.SendMessageOpts{ParseMode: "markdown"})
+	if e != nil {
+		core.Log.Error("Something went wrong")
+	}
+	f, e := documents.DownloadFileFromId("1QxMlQo0gQmQU4Yk6w70g1xx4o7U2pv97")
+	if e != nil {
+		core.Log.Errorln(e)
+		m.EditText(b, "Download from gdrive failed", &gotgbot.EditMessageTextOpts{})
+		return e
+	}
+	msgTxt = fmt.Sprintf("Downloaded file at %v", f)
+	m.EditText(b, msgTxt, &gotgbot.EditMessageTextOpts{})
+
 	return e
 }
