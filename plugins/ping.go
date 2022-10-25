@@ -13,14 +13,13 @@ func pingHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	chat := ctx.EffectiveChat
 	core.Log.Infoln("Recieved request to handle /ping")
 	start := time.Now()
-	_, e := b.SendMessage(chat.Id, "Pinging.......", &gotgbot.SendMessageOpts{})
+	msg, e := b.SendMessage(chat.Id, "Pinging.......", &gotgbot.SendMessageOpts{})
 	if e != nil {
 		core.Log.Fatalf("Failed to send message")
 		return e
 	}
 	diff := time.Since(start).Milliseconds()
 
-	_, e = b.SendMessage(chat.Id, fmt.Sprintf("Pong! %dms", diff), &gotgbot.SendMessageOpts{})
-
+	msg.EditText(b, fmt.Sprintf("Pong! %dms", diff), &gotgbot.EditMessageTextOpts{})
 	return e
 }
