@@ -14,8 +14,7 @@ func init() {
 	core.InitLogger()
 
 	// extract config
-	core.Config = core.NewBotConfig()
-	core.Config.ReadConfig(FILENAME)
+	core.Config = core.NewBotConfig(FILENAME)
 
 	// init a map to store and manage cancellable tasks
 	core.CancelTasks = core.NewCancelCmd()

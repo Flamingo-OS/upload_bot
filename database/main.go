@@ -11,8 +11,6 @@ import (
 const dbName = "kosp"
 const colName = "maintainers"
 
-var Collection *mongo.Collection
-
 // connect to the database
 func Init() {
 	core.Log.Infoln("Connecting to database...")
@@ -27,5 +25,5 @@ func Init() {
 	}
 
 	core.Log.Infoln("Connected to MongoDB!")
-	Collection = client.Database(dbName).Collection(colName)
+	core.Collection = client.Database(dbName).Collection(colName)
 }

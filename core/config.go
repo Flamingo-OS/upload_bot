@@ -12,11 +12,8 @@ type BotConfig struct {
 	MongoDbConnectionString string `json:"connection_string"`
 }
 
-func NewBotConfig() *BotConfig {
-	return &BotConfig{}
-}
-
-func (ac *BotConfig) ReadConfig(fileName string) {
+func NewBotConfig(fileName string) *BotConfig {
+	ac := &BotConfig{}
 	b, err := ioutil.ReadFile(fileName)
 	if err != nil {
 		fmt.Print(err)
@@ -25,4 +22,5 @@ func (ac *BotConfig) ReadConfig(fileName string) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	return ac
 }
