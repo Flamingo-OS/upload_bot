@@ -13,4 +13,5 @@ func InitLogger() {
 	logger, _ := config.Build()
 	defer logger.Sync()
 	Log = logger.Sugar()
+	Log.Info("Logger initialized. Initializing bot...")
 }

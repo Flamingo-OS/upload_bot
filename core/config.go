@@ -8,7 +8,8 @@ import (
 )
 
 type BotConfig struct {
-	BotToken string `json:"bot_token"`
+	BotToken                string `json:"bot_token"`
+	MongoDbConnectionString string `json:"connection_string"`
 }
 
 func NewBotConfig() *BotConfig {

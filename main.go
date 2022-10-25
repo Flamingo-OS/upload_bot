@@ -2,22 +2,29 @@ package main
 
 import (
 	"github.com/Flamingo-OS/upload-bot/core"
+	"github.com/Flamingo-OS/upload-bot/database"
 	"github.com/Flamingo-OS/upload-bot/plugins"
 )
 
 // various constants. Might me needed to change in future
 const FILENAME string = "config.json"
 
-func main() {
-	// enable logger
+func init() {
+	// init the logger
 	core.InitLogger()
+
+	// extract config
+	core.Config = core.NewBotConfig()
+	core.Config.ReadConfig(FILENAME)
 
 	// init a map to store and manage cancellable tasks
 	core.CancelTasks = core.NewCancelCmd()
 
-	// connect to tg
-	core.Config = core.NewBotConfig()
-	core.Config.ReadConfig(FILENAME)
+	// connect to db
+	database.Init()
+}
+
+func main() {
 	_, updater, err := core.BotInit(core.Config)
 	if err != nil {
 		core.Log.Errorln(err)
