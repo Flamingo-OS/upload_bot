@@ -25,11 +25,12 @@ func releaseHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	if ctx.Message.ReplyToMessage != nil && database.IsAdmin(userId) {
 		userId = ctx.Message.ReplyToMessage.From.Id
 	}
-	if database.IsMaintainer(userId) {
+	if !database.IsMaintainer(userId) {
 		_, err := b.SendMessage(chat.Id, "You are not a maintainer", &gotgbot.SendMessageOpts{})
 		return err
 	}
 
+	// introduce our cancel tasks
 	taskId, err := rand.Int(rand.Reader, big.NewInt(1000000))
 	if err != nil {
 		core.Log.Errorln(err)
@@ -38,19 +39,33 @@ func releaseHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	core.CancelTasks.Insert(taskId.Uint64())
 	defer core.CancelTasks.Remove(taskId.Uint64())
 
+	// Actual start of the release process
 	msgTxt := fmt.Sprintf("Starting release process...\nYou can cancel using `/cancel %d`", taskId.Uint64())
 	m, e := b.SendMessage(chat.Id, msgTxt, &gotgbot.SendMessageOpts{ParseMode: "markdown"})
 	if e != nil {
 		core.Log.Error("Something went wrong")
-	}
-	f, e := documents.DocumentFactory(args[0])
-	if e != nil {
-		core.Log.Errorln(e)
-		m.EditText(b, "Download failed. Please try again or ask darknanobot", &gotgbot.EditMessageTextOpts{})
 		return e
 	}
-	msgTxt = fmt.Sprintf("Downloaded file at %v", f)
-	m.EditText(b, msgTxt, &gotgbot.EditMessageTextOpts{})
+	defer b.DeleteMessage(chat.Id, m.MessageId, &gotgbot.DeleteMessageOpts{})
+
+	for _, url := range args {
+		// download the file
+		msgTxt = fmt.Sprintf("Downloading file...\nThis might take a while\nYou can cancel using `/cancel %d`", taskId.Uint64())
+		m.EditText(b, msgTxt, &gotgbot.EditMessageTextOpts{ParseMode: "markdown"})
+		f, e := documents.DocumentFactory(url)
+		if e != nil {
+			core.Log.Errorln(e)
+			b.SendMessage(chat.Id, "Download failed. Please try again or ask darknanobot", &gotgbot.SendMessageOpts{})
+			return e
+		}
+		msgTxt = fmt.Sprintf("Downloaded file to %s\nYou can cancel using `/cancel %d`", f, taskId.Uint64())
+		m.EditText(b, msgTxt, &gotgbot.EditMessageTextOpts{ParseMode: "markdown"})
+
+		if core.CancelTasks.GetCancelStatus(taskId.Uint64()) {
+			core.Log.Infoln("Release cancelled by user")
+			return nil
+		}
+	}
 
 	return e
 }
