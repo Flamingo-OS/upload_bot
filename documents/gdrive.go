@@ -94,7 +94,7 @@ func parseFileId(url string) string {
 	return re.FindString(url)
 }
 
-func DownloadFileFromId(url string) (string, error) {
+func gDriveDownloader(url string) (string, error) {
 	fileId := parseFileId(url)
 	f, err := getFileFromId(core.DriveService, fileId)
 	if err != nil {
