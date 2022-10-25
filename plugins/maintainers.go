@@ -59,3 +59,30 @@ func removeMaintainerHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 
 	return err
 }
+
+func removeDevicesHandler(b *gotgbot.Bot, ctx *ext.Context) error {
+	chat := ctx.EffectiveChat
+	core.Log.Infoln("Recieved request to handle /add")
+
+	replyMessage := ctx.EffectiveMessage.ReplyToMessage
+	userId := ctx.EffectiveUser.Id
+	if replyMessage != nil {
+		userId = replyMessage.From.Id
+	}
+	args := strings.Split(ctx.EffectiveMessage.Text, " ")[1:]
+	if len(args) == 0 {
+		_, e := b.SendMessage(chat.Id, "Please provide atleast one devide", &gotgbot.SendMessageOpts{})
+		return e
+	}
+
+	msg, err := b.SendMessage(chat.Id, "Removing the device(s)", &gotgbot.SendMessageOpts{})
+
+	e := database.RemoveDevice(userId, args)
+	if e != nil {
+		msg.EditText(b, "Something went wrong while removing device", &gotgbot.EditMessageTextOpts{})
+	}
+
+	msg.EditText(b, "Successfully removed the device(s)", &gotgbot.EditMessageTextOpts{})
+
+	return err
+}
