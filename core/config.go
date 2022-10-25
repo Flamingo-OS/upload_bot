@@ -10,6 +10,12 @@ import (
 type BotConfig struct {
 	BotToken                string `json:"bot_token"`
 	MongoDbConnectionString string `json:"connection_string"`
+	GDriveClientId          string `json:"gdrive_client_id"`
+	GDriveClientSecret      string `json:"gdrive_client_secret"`
+	GDriveAccessToken       string `json:"gdrive_access_token"`
+	GDriveRefreshToken      string `json:"gdrive_refresh_token"`
+	GDriveTokenType         string `json:"gdrive_token_type"`
+	GDriveExpiry            string `json:"gdrive_expiry"`
 }
 
 func NewBotConfig(fileName string) *BotConfig {

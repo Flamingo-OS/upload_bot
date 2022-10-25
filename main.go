@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/Flamingo-OS/upload-bot/core"
 	"github.com/Flamingo-OS/upload-bot/database"
+	"github.com/Flamingo-OS/upload-bot/documents"
 	"github.com/Flamingo-OS/upload-bot/plugins"
 )
 
@@ -21,6 +22,14 @@ func init() {
 
 	// connect to db
 	database.Init()
+
+	// GDrive
+	err := documents.NewGdrive()
+	if err != nil {
+		core.Log.Errorln(err)
+		return
+	}
+
 }
 
 func main() {
