@@ -81,12 +81,25 @@ func getFileFromId(d *drive.Service, fileId string) (*drive.File, error) {
 func downloadFile(d *drive.Service, t http.RoundTripper, f *drive.File) (string, error) {
 	core.Log.Infof("Initialising download")
 	downloadUrl := f.DownloadUrl
-	title := core.DumpPath + f.Title
+	title := f.Title
 	if downloadUrl == "" {
 		core.Log.Errorln("An error occurred: File is not downloadable")
 		return "", nil
 	}
-	return directDownloader(downloadUrl, title, t)
+	core.Log.Infof("Fetching requests")
+	req, err := http.NewRequest("GET", downloadUrl, nil)
+	if err != nil {
+		core.Log.Errorf("error occurred: %v\n", err)
+		return "", err
+	}
+	core.Log.Infof("Fetching response body")
+	resp, err := t.RoundTrip(req)
+	if err != nil {
+		core.Log.Errorf("An error occurred: %v\n", err)
+		return "", err
+	}
+	defer resp.Body.Close()
+	return downloadSaver(resp, title)
 }
 
 func parseFileId(url string) string {

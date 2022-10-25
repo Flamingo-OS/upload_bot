@@ -10,22 +10,10 @@ import (
 	"github.com/Flamingo-OS/upload-bot/core"
 )
 
-func directDownloader(url string, fileName string, t http.RoundTripper) (string, error) {
-	core.Log.Infof("Fetching requests")
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		core.Log.Errorf("error occurred: %v\n", err)
-		return "", err
-	}
-	core.Log.Infof("Fetching response body")
-	resp, err := t.RoundTrip(req)
-	if err != nil {
-		core.Log.Errorf("An error occurred: %v\n", err)
-		return "", err
-	}
-	defer resp.Body.Close()
+func downloadSaver(resp *http.Response, fileName string) (string, error) {
 	core.Log.Infof("Downloading the file")
-	fileHandle, err := os.OpenFile(fileName, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0644)
+	filePath := core.DumpPath + fileName
+	fileHandle, err := os.OpenFile(filePath, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0644)
 	if err != nil {
 		core.Log.Errorf("An error occurred: %v\n", err)
 		return "", err
@@ -37,7 +25,7 @@ func directDownloader(url string, fileName string, t http.RoundTripper) (string,
 		return "", err
 	}
 	core.Log.Infof("Downloaded %v bytes\n", val)
-	return fileName, nil
+	return filePath, nil
 }
 
 func DirectDownloader(url string) (string, error) {
@@ -53,5 +41,13 @@ func DirectDownloader(url string) (string, error) {
 		return "", fmt.Errorf("unable to find file name")
 	}
 
-	return directDownloader(url, fileName, http.DefaultTransport)
+	core.Log.Infof("Fetching requests")
+	resp, err := http.Get(url)
+	if err != nil {
+		core.Log.Errorf("Unable to fetch requests: %v", err)
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	return downloadSaver(resp, fileName)
 }
