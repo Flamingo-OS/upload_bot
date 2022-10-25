@@ -70,3 +70,26 @@ func RemoveMaintainer(userId int64) error {
 	_, err := core.Collection.UpdateOne(context.Background(), filter, update)
 	return err
 }
+
+func GetAllMaintainers() []Maintainers {
+	core.Log.Infoln("Fetching details of all maintainers")
+	filter := bson.M{}
+	cur, err := core.Collection.Find(context.Background(), filter)
+	if err != nil {
+		core.Log.Fatal(err)
+		return []Maintainers{}
+	}
+
+	var maintainers []Maintainers
+
+	for cur.Next(context.Background()) {
+		var m Maintainers
+		err := cur.Decode(&m)
+		if err != nil {
+			core.Log.Fatal(err)
+			continue
+		}
+		maintainers = append(maintainers, m)
+	}
+	return maintainers
+}

@@ -1,6 +1,7 @@
 package plugins
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/Flamingo-OS/upload-bot/core"
@@ -172,5 +173,19 @@ func addSupportGroupHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 
 	msg.EditText(b, "Successfully added support group", &gotgbot.EditMessageTextOpts{})
 
+	return err
+}
+
+func getAllMaintainers(b *gotgbot.Bot, ctx *ext.Context) error {
+	chat := ctx.EffectiveChat
+	core.Log.Infoln("Recieved request to handle /getMaintainers")
+
+	if !database.IsAdmin(ctx.EffectiveUser.Id) {
+		_, err := b.SendMessage(chat.Id, "This is admin only", &gotgbot.SendMessageOpts{})
+		return err
+	}
+	maintainers := database.GetAllMaintainers()
+	msgTxt := fmt.Sprintf("The maintainers are %#v", maintainers)
+	_, err := b.SendMessage(chat.Id, msgTxt, &gotgbot.SendMessageOpts{})
 	return err
 }

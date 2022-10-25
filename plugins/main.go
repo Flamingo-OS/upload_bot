@@ -11,10 +11,11 @@ func Main(d *ext.Dispatcher) {
 	d.AddHandler(handlers.NewCommand("cancel", cancelHandler))
 	d.AddHandler(handlers.NewCommand("demote", demoteAdminHandler))
 	d.AddHandler(handlers.NewCommand("dropDevice", removeDevicesHandler))
-	d.AddHandler(handlers.NewCommand("remove", removeMaintainerHandler))
+	d.AddHandler(handlers.NewCommand("getMaintainers", getAllMaintainers))
 	d.AddHandler(handlers.NewCommand("help", helpHandler))
 	d.AddHandler(handlers.NewCommand("ping", pingHandler))
 	d.AddHandler(handlers.NewCommand("promote", promoteAdminHandler))
 	d.AddHandler(handlers.NewCommand("release", releaseHandler))
+	d.AddHandler(handlers.NewCommand("remove", removeMaintainerHandler))
 	d.AddHandler(handlers.NewCommand("start", startHelper))
 }
