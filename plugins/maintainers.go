@@ -34,5 +34,28 @@ func addMaintainerHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		msg.EditText(b, "Error adding maintainer. Please try again later.", &gotgbot.EditMessageTextOpts{})
 	}
 
+	msg.EditText(b, "Successfully added a maintainer", &gotgbot.EditMessageTextOpts{})
+	return err
+}
+
+func removeMaintainerHandler(b *gotgbot.Bot, ctx *ext.Context) error {
+	chat := ctx.EffectiveChat
+	core.Log.Infoln("Recieved request to handle /add")
+
+	replyMessage := ctx.EffectiveMessage.ReplyToMessage
+	if replyMessage == nil {
+		_, e := b.SendMessage(chat.Id, "Reply to a message from the user you want to add as maintainer.", &gotgbot.SendMessageOpts{})
+		return e
+	}
+	msg, err := b.SendMessage(chat.Id, "Removing the maintainer", &gotgbot.SendMessageOpts{})
+	userId := replyMessage.From.Id
+
+	e := database.RemoveMaintainer(userId)
+	if e != nil {
+		msg.EditText(b, "Error adding maintainer. Please try again later.", &gotgbot.EditMessageTextOpts{})
+	}
+
+	msg.EditText(b, "Successfully removed the maintainer", &gotgbot.EditMessageTextOpts{})
+
 	return err
 }
