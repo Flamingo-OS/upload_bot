@@ -12,6 +12,9 @@ func main() {
 	// enable logger
 	core.InitLogger()
 
+	// init a map to store and manage cancellable tasks
+	core.CancelTasks = core.NewCancelCmd()
+
 	// connect to tg
 	core.Config = core.NewBotConfig()
 	core.Config.ReadConfig(FILENAME)
