@@ -3,10 +3,8 @@ package documents
 import (
 	"context"
 	"encoding/json"
-	"io"
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/Flamingo-OS/upload-bot/core"
 	"golang.org/x/oauth2"
@@ -87,33 +85,7 @@ func downloadFile(d *drive.Service, t http.RoundTripper, f *drive.File) (string,
 		core.Log.Errorln("An error occurred: File is not downloadable")
 		return "", nil
 	}
-	core.Log.Infof("Fetching requests")
-	req, err := http.NewRequest("GET", downloadUrl, nil)
-	if err != nil {
-		core.Log.Errorf("error occurred: %v\n", err)
-		return "", err
-	}
-	core.Log.Infof("Fetching response body")
-	resp, err := t.RoundTrip(req)
-	if err != nil {
-		core.Log.Errorf("An error occurred: %v\n", err)
-		return "", err
-	}
-	defer resp.Body.Close()
-	core.Log.Infof("Downloading the file")
-	fileHandle, err := os.OpenFile(title, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0644)
-	if err != nil {
-		core.Log.Errorf("An error occurred: %v\n", err)
-		return "", err
-	}
-	defer fileHandle.Close()
-	val, err := io.Copy(fileHandle, resp.Body)
-	if err != nil {
-		core.Log.Errorf("An error occurred: %v\n", err)
-		return "", err
-	}
-	core.Log.Infof("Downloaded %v bytes\n", val)
-	return title, nil
+	return directDownloader(downloadUrl, title, t)
 }
 
 func DownloadFileFromId(fileId string) (string, error) {
@@ -122,10 +94,5 @@ func DownloadFileFromId(fileId string) (string, error) {
 		core.Log.Errorf("An error occurred: %v\n", err)
 		return "", err
 	}
-	fileName, err := downloadFile(core.DriveService, core.DriveClient.Transport, f)
-	if err != nil {
-		core.Log.Errorf("An error occurred: %v\n", err)
-		return "", err
-	}
-	return fileName, nil
+	return downloadFile(core.DriveService, core.DriveClient.Transport, f)
 }
