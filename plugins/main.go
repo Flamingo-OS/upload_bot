@@ -7,6 +7,7 @@ import (
 
 func Main(d *ext.Dispatcher) {
 	d.AddHandler(handlers.NewCommand("add", addMaintainerHandler))
+	d.AddHandler(handlers.NewCommand("addGroup", addSupportGroupHandler))
 	d.AddHandler(handlers.NewCommand("cancel", cancelHandler))
 	d.AddHandler(handlers.NewCommand("demote", demoteAdminHandler))
 	d.AddHandler(handlers.NewCommand("dropDevice", removeDevicesHandler))

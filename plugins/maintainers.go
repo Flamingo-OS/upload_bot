@@ -40,7 +40,7 @@ func addMaintainerHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 
 func removeMaintainerHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	chat := ctx.EffectiveChat
-	core.Log.Infoln("Recieved request to handle /add")
+	core.Log.Infoln("Recieved request to handle /remove")
 
 	replyMessage := ctx.EffectiveMessage.ReplyToMessage
 	if replyMessage == nil {
@@ -62,7 +62,7 @@ func removeMaintainerHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 
 func removeDevicesHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	chat := ctx.EffectiveChat
-	core.Log.Infoln("Recieved request to handle /add")
+	core.Log.Infoln("Recieved request to handle /dropDevice")
 
 	replyMessage := ctx.EffectiveMessage.ReplyToMessage
 	userId := ctx.EffectiveUser.Id
@@ -89,7 +89,7 @@ func removeDevicesHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 
 func promoteAdminHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	chat := ctx.EffectiveChat
-	core.Log.Infoln("Recieved request to handle /add")
+	core.Log.Infoln("Recieved request to handle /promote")
 
 	replyMessage := ctx.EffectiveMessage.ReplyToMessage
 	userId := ctx.EffectiveUser.Id
@@ -112,23 +112,52 @@ func promoteAdminHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 
 func demoteAdminHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	chat := ctx.EffectiveChat
-	core.Log.Infoln("Recieved request to handle /add")
+	core.Log.Infoln("Recieved request to handle /demote")
 
 	replyMessage := ctx.EffectiveMessage.ReplyToMessage
 	userId := ctx.EffectiveUser.Id
 	if replyMessage == nil {
-		_, e := b.SendMessage(chat.Id, "Reply to a message from the user you want to add as an admin.", &gotgbot.SendMessageOpts{})
+		_, e := b.SendMessage(chat.Id, "Reply to a message from the user you want to remove as an admin.", &gotgbot.SendMessageOpts{})
 		return e
 	}
 
-	msg, err := b.SendMessage(chat.Id, "Promoting user", &gotgbot.SendMessageOpts{})
+	msg, err := b.SendMessage(chat.Id, "Demoting user", &gotgbot.SendMessageOpts{})
 
 	e := database.DemoteAdmin(userId)
 	if e != nil {
-		msg.EditText(b, "Something went wrong while promoting user", &gotgbot.EditMessageTextOpts{})
+		msg.EditText(b, "Something went wrong while demoting user", &gotgbot.EditMessageTextOpts{})
 	}
 
-	msg.EditText(b, "Successfully promoted user", &gotgbot.EditMessageTextOpts{})
+	msg.EditText(b, "Successfully demoted user", &gotgbot.EditMessageTextOpts{})
+
+	return err
+}
+
+func addSupportGroupHandler(b *gotgbot.Bot, ctx *ext.Context) error {
+	chat := ctx.EffectiveChat
+	core.Log.Infoln("Recieved request to handle /addGroup")
+
+	replyMessage := ctx.EffectiveMessage.ReplyToMessage
+	userId := ctx.EffectiveUser.Id
+	if replyMessage != nil {
+		userId = replyMessage.From.Id
+	}
+	args := strings.Split(ctx.EffectiveMessage.Text, " ")[1:]
+	if len(args) == 0 {
+		_, e := b.SendMessage(chat.Id, "Please provide a support group", &gotgbot.SendMessageOpts{})
+		return e
+	}
+
+	supportGroup := args[0]
+
+	msg, err := b.SendMessage(chat.Id, "Adding the support group", &gotgbot.SendMessageOpts{})
+
+	e := database.AddSupportGroup(userId, supportGroup)
+	if e != nil {
+		msg.EditText(b, "Something went wrong while adding support group", &gotgbot.EditMessageTextOpts{})
+	}
+
+	msg.EditText(b, "Successfully added support group", &gotgbot.EditMessageTextOpts{})
 
 	return err
 }
