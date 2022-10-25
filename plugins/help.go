@@ -11,8 +11,10 @@ func helpHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	core.Log.Infoln("Recieved request to handle /help")
 	var helpTxt = `
 	Hey, I'm Flamingo upload bot. I upload OTA files from your drives to hosted drive
+	/cancel ID - Cancel an upload
 	/help - Show this message
 	/ping - Check how slow I am today ;)
+	/release - Upload a release
 	/start - Check if I am alive? 
 	`
 	_, e := b.SendMessage(chat.Id, helpTxt, &gotgbot.SendMessageOpts{})
