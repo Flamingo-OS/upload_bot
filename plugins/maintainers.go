@@ -18,6 +18,12 @@ func addMaintainerHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		_, e := b.SendMessage(chat.Id, "Reply to a message from the user you want to add as maintainer.", &gotgbot.SendMessageOpts{})
 		return e
 	}
+
+	if !database.IsAdmin(ctx.EffectiveUser.Id) {
+		_, e := b.SendMessage(chat.Id, "Ask an admin to add you as a maintainer", &gotgbot.SendMessageOpts{})
+		return e
+	}
+
 	args := strings.Split(ctx.EffectiveMessage.Text, " ")[1:]
 	if len(args) == 0 {
 		_, e := b.SendMessage(chat.Id, "Please provide atleast one devide", &gotgbot.SendMessageOpts{})
@@ -92,15 +98,19 @@ func promoteAdminHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	core.Log.Infoln("Recieved request to handle /promote")
 
 	replyMessage := ctx.EffectiveMessage.ReplyToMessage
-	userId := ctx.EffectiveUser.Id
 	if replyMessage == nil {
 		_, e := b.SendMessage(chat.Id, "Reply to a message from the user you want to add as an admin.", &gotgbot.SendMessageOpts{})
 		return e
 	}
 
+	if !database.IsAdmin(ctx.EffectiveUser.Id) {
+		_, e := b.SendMessage(chat.Id, "Ask an admin to promote you", &gotgbot.SendMessageOpts{})
+		return e
+	}
+
 	msg, err := b.SendMessage(chat.Id, "Promoting user", &gotgbot.SendMessageOpts{})
 
-	e := database.PromoteAdmin(userId)
+	e := database.PromoteAdmin(replyMessage.From.Id)
 	if e != nil {
 		msg.EditText(b, "Something went wrong while promoting user", &gotgbot.EditMessageTextOpts{})
 	}
@@ -115,15 +125,19 @@ func demoteAdminHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	core.Log.Infoln("Recieved request to handle /demote")
 
 	replyMessage := ctx.EffectiveMessage.ReplyToMessage
-	userId := ctx.EffectiveUser.Id
 	if replyMessage == nil {
 		_, e := b.SendMessage(chat.Id, "Reply to a message from the user you want to remove as an admin.", &gotgbot.SendMessageOpts{})
 		return e
 	}
 
+	if !database.IsAdmin(ctx.EffectiveUser.Id) {
+		_, e := b.SendMessage(chat.Id, "You aren't an admin?!", &gotgbot.SendMessageOpts{})
+		return e
+	}
+
 	msg, err := b.SendMessage(chat.Id, "Demoting user", &gotgbot.SendMessageOpts{})
 
-	e := database.DemoteAdmin(userId)
+	e := database.DemoteAdmin(replyMessage.From.Id)
 	if e != nil {
 		msg.EditText(b, "Something went wrong while demoting user", &gotgbot.EditMessageTextOpts{})
 	}
