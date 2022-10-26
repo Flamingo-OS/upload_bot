@@ -48,9 +48,10 @@ func releaseHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 	defer b.DeleteMessage(chat.Id, m.MessageId, &gotgbot.DeleteMessageOpts{})
 
+	var filePaths []string // stores the downloaded file paths
 	for _, url := range args {
 		// download the file
-		msgTxt = fmt.Sprintf("Downloading file...\nThis might take a while\nYou can cancel using `/cancel %d`", taskId.Uint64())
+		msgTxt = fmt.Sprintf("Downloading file %v...\nThis might take a while\nYou can cancel using `/cancel %d`", url, taskId.Uint64())
 		m.EditText(b, msgTxt, &gotgbot.EditMessageTextOpts{ParseMode: "markdown"})
 		f, e := documents.DocumentFactory(url)
 		if e != nil {
@@ -58,7 +59,8 @@ func releaseHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 			b.SendMessage(chat.Id, "Download failed. Please try again or ask darknanobot", &gotgbot.SendMessageOpts{})
 			return e
 		}
-		msgTxt = fmt.Sprintf("Downloaded file to %s\nYou can cancel using `/cancel %d`", f, taskId.Uint64())
+		filePaths = append(filePaths, f)
+		msgTxt = fmt.Sprintf("Downloaded file to %s. Have downloaded %v files.\nYou can cancel using `/cancel %d`", f, len(filePaths), taskId.Uint64())
 		m.EditText(b, msgTxt, &gotgbot.EditMessageTextOpts{ParseMode: "markdown"})
 
 		if core.CancelTasks.GetCancelStatus(taskId.Uint64()) {
