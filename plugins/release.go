@@ -46,7 +46,6 @@ func releaseHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		core.Log.Error("Something went wrong")
 		return e
 	}
-	defer b.DeleteMessage(chat.Id, m.MessageId, &gotgbot.DeleteMessageOpts{})
 
 	var filePaths []string // stores the downloaded file paths
 	for _, url := range args {
