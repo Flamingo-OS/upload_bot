@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"reflect"
 	"strings"
 	"time"
 
@@ -97,6 +98,10 @@ func listDir(accessToken string, fileId string) (map[string]string, error) {
 
 	var data interface{}
 	json.Unmarshal(body, &data)
+
+	if reflect.TypeOf(data.(map[string]interface{})["value"]) != reflect.TypeOf([]interface{}{}) {
+		return nil, fmt.Errorf("invalid response body")
+	}
 
 	// huge hax to prevent me from actually fully defining the response.
 	// I have no idea what the json is and need a lot of help correcting in Go.
