@@ -27,22 +27,16 @@ type tokenResponse struct {
 func getAccessToken() (string, error) {
 	core.Log.Info("Getting access token")
 	apiUrl := fmt.Sprintf("https://login.microsoftonline.com/%s/oauth2/v2.0/token", core.Config.OneDriveTenantId)
-	jsonReqData := map[string]string{
-		"client_id":     core.Config.OneDriveClientId,
-		"client_secret": core.Config.OneDriveClientSecret,
-		"refresh_token": core.Config.OneDriveRefreshToken,
-		"grant_type":    "refresh_token",
-		"scope":         "offline_access Files.ReadWrite.All",
-		"redirect_uri":  "http://localhost:8080",
-	}
-	reqData, err := json.Marshal(jsonReqData)
-	if err != nil {
-		return "", err
-	}
-
+	reqData := url.Values{}
+	reqData.Set("client_id", core.Config.OneDriveClientId)
+	reqData.Set("scope", "offline_access files.readwrite")
+	reqData.Set("client_secret", core.Config.OneDriveClientSecret)
+	reqData.Set("grant_type", "refresh_token")
+	reqData.Set("redirect_uri", "http://localhost:8080")
+	reqData.Set("refresh_token", core.Config.OneDriveRefreshToken)
 	client := &http.Client{}
 	defer client.CloseIdleConnections()
-	req, err := http.NewRequest(http.MethodPost, apiUrl, strings.NewReader(string(reqData)))
+	req, err := http.NewRequest(http.MethodPost, apiUrl, strings.NewReader(reqData.Encode()))
 	if err != nil {
 		core.Log.Fatal("Error creating request: ", err)
 		return "", err
@@ -55,10 +49,6 @@ func getAccessToken() (string, error) {
 	}
 	defer resp.Body.Close()
 	body, _ := ioutil.ReadAll(resp.Body)
-
-	if string(body) == "" {
-		return "", fmt.Errorf("empty response body")
-	}
 
 	var tokResp tokenResponse
 	_ = json.Unmarshal(body, &tokResp)
@@ -275,8 +265,8 @@ func uploadFile(accessToken string, filePath string, parentFileId string) error 
 func OneDriveUploader(filePath string, dirPath string) error {
 	core.Log.Info("Uploading file to OneDrive")
 	accessToken, err := getAccessToken()
-	if err != nil {
-		core.Log.Fatal("Error getting access token: ", err)
+	if err != nil || accessToken == "" {
+		core.Log.Error("Error getting access token: ", err)
 		return err
 	}
 
@@ -284,7 +274,7 @@ func OneDriveUploader(filePath string, dirPath string) error {
 
 	fileId, err := makeFolder(accessToken, dirPaths[0], "")
 	if err != nil {
-		core.Log.Fatal("Error creating folder: ", err)
+		core.Log.Error("Error creating folder: ", err)
 		return err
 	}
 
@@ -293,7 +283,7 @@ func OneDriveUploader(filePath string, dirPath string) error {
 	for i := 1; i < len(dirPaths); i++ {
 		fileId, err = makeFolder(accessToken, dirPaths[i], fileId)
 		if err != nil {
-			core.Log.Fatal("Error creating folder: ", err)
+			core.Log.Error("Error creating folder: ", err)
 			return err
 		}
 	}
