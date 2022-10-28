@@ -101,3 +101,60 @@ func listDir(accessToken string, fileId string) (map[string]string, error) {
 	}
 	return files, nil
 }
+
+func makeFolder(accessToken string, fileName string, parentFileId string) (string, error) {
+	apiUrl := "https://graph.microsoft.com/v1.0/me/drive/"
+	if parentFileId != "" {
+		apiUrl += "items/" + parentFileId + "/children"
+	} else {
+		apiUrl += "root/children"
+	}
+
+	// check if file already exists
+	files, err := listDir(accessToken, parentFileId)
+	if err != nil {
+		return "", err
+	}
+
+	for fileId, name := range files {
+		if name == fileName {
+			return fileId, nil
+		}
+	}
+
+	reqBody := map[string]any{
+		"name":                              fileName,
+		"folder":                            map[string]any{},
+		"@microsoft.graph.conflictBehavior": "rename",
+	}
+	jsonBody, _ := json.Marshal(reqBody)
+
+	client := &http.Client{}
+	defer client.CloseIdleConnections()
+
+	req, err := http.NewRequest(http.MethodPost, apiUrl, strings.NewReader(string(jsonBody)))
+	if err != nil {
+		core.Log.Fatal("Error creating request: ", err)
+		return "", err
+	}
+	req.Header.Set("Accept", "*/*")
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", accessToken))
+
+	resp, err := client.Do(req)
+	if err != nil {
+		core.Log.Fatal("Error sending request: ", err)
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	resBody, _ := ioutil.ReadAll(resp.Body)
+	if string(resBody) == "" {
+		return "", fmt.Errorf("failed to create folder")
+	}
+
+	var resData interface{}
+	json.Unmarshal(resBody, &resData)
+	fileId := resData.(map[string]interface{})["id"].(string)
+	return fileId, nil
+}
