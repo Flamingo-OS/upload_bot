@@ -73,7 +73,7 @@ func getFileFromId(d *drive.Service, fileId string) (*drive.File, error) {
 		core.Log.Errorf("An error occurred: %v\n", err)
 		return nil, err
 	}
-	core.Log.Info("Title: %v \n", f.Title)
+	core.Log.Info("Title: ", f.Title)
 	return f, nil
 }
 
