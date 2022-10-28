@@ -61,10 +61,12 @@ func getAccessToken() (string, error) {
 
 	var tokResp tokenResponse
 	_ = json.Unmarshal(body, &tokResp)
+	core.Log.Info("Access token was successfully retrieved")
 	return tokResp.AccessToken, nil
 }
 
 func listDir(accessToken string, fileId string) (map[string]string, error) {
+	core.Log.Info("Listing directory")
 	apiUrl := "https://graph.microsoft.com/v1.0/me/drive/"
 	if fileId != "" {
 		apiUrl += "items/" + fileId + "/children"
@@ -105,10 +107,12 @@ func listDir(accessToken string, fileId string) (map[string]string, error) {
 		fileName := dir.(map[string]interface{})["name"].(string)
 		files[fileId] = fileName
 	}
+	core.Log.Info("Directory was successfully listed")
 	return files, nil
 }
 
 func makeFolder(accessToken string, fileName string, parentFileId string) (string, error) {
+	core.Log.Info("Making folder")
 	apiUrl := "https://graph.microsoft.com/v1.0/me/drive/"
 	if parentFileId != "" {
 		apiUrl += "items/" + parentFileId + "/children"
@@ -162,10 +166,12 @@ func makeFolder(accessToken string, fileName string, parentFileId string) (strin
 	var resData interface{}
 	json.Unmarshal(resBody, &resData)
 	fileId := resData.(map[string]interface{})["id"].(string)
+	core.Log.Info("Folder was successfully created with fileId: ", fileId)
 	return fileId, nil
 }
 
 func uploadFile(accessToken string, filePath string, parentFileId string) error {
+	core.Log.Info("Uploading file")
 	var chunkSize int64 = 1024 * 1024 * 4
 	apiUrl := "https://graph.microsoft.com/v1.0/me/drive/"
 	if parentFileId != "" {
@@ -254,13 +260,15 @@ func uploadFile(accessToken string, filePath string, parentFileId string) error 
 			core.Log.Error("Error reading response body: ", err)
 			return err
 		}
+		core.Log.Info("Uploaded chunk ", currChunk, " - ", currChunk+int64(ret)-1, " of ", contentSize)
 		currChunk += int64(ret)
 	}
-
+	core.Log.Info("File was successfully uploaded")
 	return nil
 }
 
 func OneDriveUploader(filePath string, dirPath string) error {
+	core.Log.Info("Uploading file to OneDrive")
 	accessToken, err := getAccessToken()
 	if err != nil {
 		core.Log.Fatal("Error getting access token: ", err)
