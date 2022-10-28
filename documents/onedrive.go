@@ -258,3 +258,31 @@ func uploadFile(accessToken string, filePath string, parentFileId string) error 
 
 	return nil
 }
+
+func OneDriveUploader(filePath string, dirPath string) error {
+	accessToken, err := getAccessToken()
+	if err != nil {
+		core.Log.Fatal("Error getting access token: ", err)
+		return err
+	}
+
+	dirPaths := strings.Split(dirPath, "/")
+
+	fileId, err := makeFolder(accessToken, dirPaths[0], "")
+	if err != nil {
+		core.Log.Fatal("Error creating folder: ", err)
+		return err
+	}
+
+	// traverse through dir till we reach the required folder
+	// This is the only way graph api allows to get the required folder
+	for i := 1; i < len(dirPaths); i++ {
+		fileId, err = makeFolder(accessToken, dirPaths[i], fileId)
+		if err != nil {
+			core.Log.Fatal("Error creating folder: ", err)
+			return err
+		}
+	}
+
+	return uploadFile(accessToken, filePath, fileId)
+}
