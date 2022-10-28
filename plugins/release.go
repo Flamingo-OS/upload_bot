@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"fmt"
 	"math/big"
+	"os"
 
 	"github.com/Flamingo-OS/upload-bot/core"
 	"github.com/Flamingo-OS/upload-bot/database"
@@ -15,6 +16,11 @@ import (
 func releaseHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	chat := ctx.EffectiveChat
 	core.Log.Infoln("Recieved request to handle /release")
+
+	// create and delete dir after completion
+	os.Mkdir(core.DumpPath, 0755)
+	defer os.RemoveAll(core.DumpPath)
+
 	// sanity checks. should have a download link, should be a maintainer
 	args := ctx.Args()[1:]
 	if len(args) == 0 {
