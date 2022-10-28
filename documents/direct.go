@@ -24,7 +24,7 @@ func downloadSaver(resp *http.Response, fileName string) (string, error) {
 		core.Log.Errorf("An error occurred: %v\n", err)
 		return "", err
 	}
-	core.Log.Info("Downloaded %v bytes\n", val)
+	core.Log.Info("Downloaded bytes:", val)
 	return filePath, nil
 }
 

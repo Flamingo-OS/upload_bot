@@ -48,10 +48,12 @@ func releaseHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 
 	var filePaths []string // stores the downloaded file paths
+	msgTxt = fmt.Sprintf("Initialising download...\nThis might take a while\nYou can cancel using `/cancel %d`", taskId.Uint64())
+	m.EditText(b, msgTxt, &gotgbot.EditMessageTextOpts{ParseMode: "markdown"})
+	println(args)
 	for _, url := range args {
 		// download the file
-		msgTxt = fmt.Sprintf("Downloading file %v...\nThis might take a while\nYou can cancel using `/cancel %d`", url, taskId.Uint64())
-		m.EditText(b, msgTxt, &gotgbot.EditMessageTextOpts{ParseMode: "markdown"})
+		core.Log.Info("Downloading file with url:", url)
 		f, e := documents.DocumentFactory(url)
 		if e != nil {
 			core.Log.Errorln(e)
