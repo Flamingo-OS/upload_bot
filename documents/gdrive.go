@@ -67,32 +67,32 @@ func NewGdrive() error {
 }
 
 func getFileFromId(d *drive.Service, fileId string) (*drive.File, error) {
-	core.Log.Infof("Finding details about the file to download")
+	core.Log.Info("Finding details about the file to download")
 	f, err := d.Files.Get(fileId).SupportsAllDrives(true).SupportsTeamDrives(true).Do()
 	if err != nil {
 		core.Log.Errorf("An error occurred: %v\n", err)
 		return nil, err
 	}
-	core.Log.Infof("Title: %v \n", f.Title)
+	core.Log.Info("Title: %v \n", f.Title)
 	return f, nil
 }
 
 // DownloadFile downloads the content of a given file object
 func downloadFile(d *drive.Service, t http.RoundTripper, f *drive.File) (string, error) {
-	core.Log.Infof("Initialising download")
+	core.Log.Info("Initialising download")
 	downloadUrl := f.DownloadUrl
 	title := f.Title
 	if downloadUrl == "" {
 		core.Log.Errorln("An error occurred: File is not downloadable")
 		return "", nil
 	}
-	core.Log.Infof("Fetching requests")
+	core.Log.Info("Fetching requests")
 	req, err := http.NewRequest("GET", downloadUrl, nil)
 	if err != nil {
 		core.Log.Errorf("error occurred: %v\n", err)
 		return "", err
 	}
-	core.Log.Infof("Fetching response body")
+	core.Log.Info("Fetching response body")
 	resp, err := t.RoundTrip(req)
 	if err != nil {
 		core.Log.Errorf("An error occurred: %v\n", err)

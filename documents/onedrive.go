@@ -24,6 +24,7 @@ type tokenResponse struct {
 }
 
 func getAccessToken() (string, error) {
+	core.Log.Info("Getting access token")
 	apiUrl := fmt.Sprintf("https://login.microsoftonline.com/%s/oauth2/v2.0/token", core.Config.OneDriveTenantId)
 	jsonReqData := map[string]string{
 		"client_id":     core.Config.OneDriveClientId,

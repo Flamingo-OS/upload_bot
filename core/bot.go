@@ -20,6 +20,6 @@ func BotInit(config *BotConfig) (b *gotgbot.Bot, updater ext.Updater, err error)
 	if err != nil {
 		Log.Errorf("Failed to start polling due to %s\n", err.Error())
 	}
-	Log.Infof("The upload bot is up and running")
+	Log.Info("The upload bot is up and running")
 	return b, updater, nil
 }
