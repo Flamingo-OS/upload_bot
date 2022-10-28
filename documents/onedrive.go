@@ -57,3 +57,47 @@ func getAccessToken() (string, error) {
 	_ = json.Unmarshal(body, &tokResp)
 	return tokResp.AccessToken, nil
 }
+
+func listDir(accessToken string, fileId string) (map[string]string, error) {
+	apiUrl := "https://graph.microsoft.com/v1.0/me/drive/"
+	if fileId != "" {
+		apiUrl += "items/" + fileId + "/children"
+	} else {
+		apiUrl += "root/children"
+	}
+
+	client := &http.Client{}
+	defer client.CloseIdleConnections()
+
+	req, err := http.NewRequest(http.MethodGet, apiUrl, nil)
+	if err != nil {
+		core.Log.Fatal("Error creating request: ", err)
+		return nil, err
+	}
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", accessToken))
+	resp, err := client.Do(req)
+	if err != nil {
+		core.Log.Fatal("Error sending request: ", err)
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, _ := ioutil.ReadAll(resp.Body)
+
+	if string(body) == "" {
+		return nil, fmt.Errorf("empty response body")
+	}
+
+	var data interface{}
+	json.Unmarshal(body, &data)
+
+	// huge hax to prevent me from actually fully defining the response.
+	// I have no idea what the json is and need a lot of help correcting in Go.
+	// If you know how to do this, please help me.
+	var files map[string]string = make(map[string]string)
+	for _, dir := range data.(map[string]interface{})["value"].([]interface{}) {
+		fileId := dir.(map[string]interface{})["id"].(string)
+		fileName := dir.(map[string]interface{})["name"].(string)
+		files[fileId] = fileName
+	}
+	return files, nil
+}
