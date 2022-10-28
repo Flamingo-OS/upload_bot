@@ -1,11 +1,16 @@
 package documents
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"math"
 	"net/http"
+	"net/url"
+	"os"
 	"strings"
+	"time"
 
 	"github.com/Flamingo-OS/upload-bot/core"
 )
@@ -157,4 +162,99 @@ func makeFolder(accessToken string, fileName string, parentFileId string) (strin
 	json.Unmarshal(resBody, &resData)
 	fileId := resData.(map[string]interface{})["id"].(string)
 	return fileId, nil
+}
+
+func uploadFile(accessToken string, filePath string, parentFileId string) error {
+	var chunkSize int64 = 1024 * 1024 * 4
+	apiUrl := "https://graph.microsoft.com/v1.0/me/drive/"
+	if parentFileId != "" {
+		apiUrl += "items/" + parentFileId + ":/"
+	} else {
+		apiUrl += "root:/"
+	}
+
+	fileStat, err := os.Stat(filePath)
+
+	if err != nil {
+		core.Log.Fatal("Error getting file stat: ", err)
+		return err
+	}
+
+	destinationFileName := fileStat.Name()
+	apiUrl += url.PathEscape(destinationFileName) + ":/createUploadSession"
+	modFileDate := fileStat.ModTime().In(time.UTC).Format(time.RFC3339)
+	body := map[string]any{
+		"item": map[string]any{
+			"@microsoft.graph.conflictBehavior": "rename",
+			"name":                              destinationFileName,
+			"fileSystemInfo": map[string]any{
+				"createdDateTime":      modFileDate,
+				"lastModifiedDateTime": modFileDate,
+			},
+		},
+	}
+
+	data, _ := json.Marshal(body)
+
+	client := &http.Client{}
+	defer client.CloseIdleConnections()
+
+	req, err := http.NewRequest(http.MethodPost, apiUrl, strings.NewReader(string(data)))
+	if err != nil {
+		core.Log.Fatal("Error creating request: ", err)
+		return err
+	}
+
+	req.Header.Set("Accept", "*/*")
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", accessToken))
+
+	resp, err := client.Do(req)
+	if err != nil {
+		core.Log.Fatal("Error sending request: ", err)
+		return err
+	}
+	defer resp.Body.Close()
+
+	resBody, _ := ioutil.ReadAll(resp.Body)
+	var resData interface{}
+	json.Unmarshal(resBody, &resData)
+	uploadUrl := resData.(map[string]interface{})["uploadUrl"].(string)
+
+	contentSize := fileStat.Size()
+
+	fileData, err := os.OpenFile(filePath, os.O_RDONLY, 0)
+	if err != nil {
+		core.Log.Fatal("Error opening file: ", err)
+		return err
+	}
+	defer fileData.Close()
+
+	var currChunk int64 = 0
+	for currChunk < contentSize {
+		content := make([]byte, int(math.Min(float64(chunkSize), float64(contentSize-currChunk))))
+		ret, _ := fileData.Read(content)
+
+		req, err := http.NewRequest(http.MethodPut, uploadUrl, bytes.NewReader(content))
+		if err != nil {
+			core.Log.Error("Error creating request: ", err)
+			return err
+		}
+		contentRange := fmt.Sprintf("bytes %v-%v/%v", currChunk, currChunk+int64(ret)-1, contentSize)
+		req.Header.Set("Content-Range", contentRange)
+		resp, err := client.Do(req)
+		if err != nil {
+			println(err)
+			return err
+		}
+		defer resp.Body.Close()
+		_, err = ioutil.ReadAll(resp.Body)
+		if err != nil {
+			core.Log.Error("Error reading response body: ", err)
+			return err
+		}
+		currChunk += int64(ret)
+	}
+
+	return nil
 }
