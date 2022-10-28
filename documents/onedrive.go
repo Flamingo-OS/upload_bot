@@ -187,7 +187,7 @@ func uploadFile(accessToken string, filePath string, parentFileId string) error 
 	modFileDate := fileStat.ModTime().In(time.UTC).Format(time.RFC3339)
 	body := map[string]any{
 		"item": map[string]any{
-			"@microsoft.graph.conflictBehavior": "rename",
+			"@microsoft.graph.conflictBehavior": "replace",
 			"name":                              destinationFileName,
 			"fileSystemInfo": map[string]any{
 				"createdDateTime":      modFileDate,
