@@ -167,7 +167,7 @@ func makeFolder(accessToken string, fileName string, parentFileId string) (strin
 
 func uploadFile(accessToken string, filePath string, parentFileId string) error {
 	core.Log.Info("Uploading file")
-	var chunkSize int64 = 1024 * 1024 * 4
+	var chunkSize int64 = 1024 * 1024 * 40 // 40MB
 	apiUrl := "https://graph.microsoft.com/v1.0/me/drive/"
 	if parentFileId != "" {
 		apiUrl += "items/" + parentFileId + ":/"
