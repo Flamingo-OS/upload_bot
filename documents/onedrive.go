@@ -246,7 +246,7 @@ func uploadFile(accessToken string, filePath string, parentFileId string) error 
 		req.Header.Set("Content-Range", contentRange)
 		resp, err := client.Do(req)
 		if err != nil {
-			println(err)
+			core.Log.Error("Error sending request: ", err)
 			return err
 		}
 		defer resp.Body.Close()
