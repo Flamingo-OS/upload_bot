@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -288,21 +287,21 @@ func createChangelogs(ch *string, repo string, date time.Time, mut *sync.Mutex, 
 }
 
 // Main handler.
-func CreateChangelog(deviceName string, isVanilla bool) error {
+func CreateChangelog(deviceName string, isVanilla bool) (string, error) {
 	Log.Info("Creating changelog")
 	var wg sync.WaitGroup
 	var mut sync.Mutex
 	date, err := findLastDate(deviceName, isVanilla)
 	if err != nil {
 		Log.Error("Error while finding last date: %s", err)
-		return err
+		return "", err
 	}
 	repos = []string{}
 	findRepoUrls(fmt.Sprintf("https://api.github.com/orgs/%s/repos?type=all", MainOrg), date)
 	deviceRepo, err := findDeviceRepo(deviceName)
 	if err != nil {
 		Log.Error("Error while finding device repo: %s", err)
-		return err
+		return "", err
 	}
 	repos = append(repos, fmt.Sprintf("https://api.github.com/repos/%s/%s/commits", DeviceOrg, deviceRepo))
 	findDependencies(deviceRepo)
@@ -313,16 +312,5 @@ func CreateChangelog(deviceName string, isVanilla bool) error {
 		wg.Add(1)
 	}
 	wg.Wait()
-	f, err := os.Create(fmt.Sprintf("%s/changelog.txt", DumpPath))
-	if err != nil {
-		Log.Error("Error while creating file: %s", err)
-		return err
-	}
-	defer f.Close()
-	_, err = f.WriteString(completeChangelog)
-	if err != nil {
-		Log.Error("Error while writing to file: %s", err)
-		return err
-	}
-	return nil
+	return completeChangelog, nil
 }
