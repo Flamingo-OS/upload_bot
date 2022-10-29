@@ -76,3 +76,18 @@ func FindShaSum(filePath string) (string, error) {
 
 	return fmt.Sprintf("%x", h.Sum(nil)), nil
 }
+
+func writeToFile(fileName string, content string) error {
+	f, err := os.Create(fileName)
+	if err != nil {
+		Log.Error("Error while creating file: %s", err)
+		return err
+	}
+	defer f.Close()
+	_, err = f.WriteString(content)
+	if err != nil {
+		Log.Error("Error while writing to file: %s", err)
+		return err
+	}
+	return nil
+}

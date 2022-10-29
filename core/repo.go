@@ -3,7 +3,6 @@ package core
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/go-git/go-git/v5"
@@ -11,21 +10,6 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
 )
-
-func writeToFile(fileName string, content string) error {
-	f, err := os.Create(fileName)
-	if err != nil {
-		Log.Error("Error while creating file: %s", err)
-		return err
-	}
-	defer f.Close()
-	_, err = f.WriteString(content)
-	if err != nil {
-		Log.Error("Error while writing to file: %s", err)
-		return err
-	}
-	return nil
-}
 
 func CreateOTACommit(deviceName string, flavour string, fullOtaFile string, incrementalOtaFile string) error {
 	branch := "dev"
