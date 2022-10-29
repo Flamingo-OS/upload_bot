@@ -190,15 +190,16 @@ func releaseHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 	msgTxt = strings.Trim(msgTxt, ", `")
 	core.Log.Info(msgTxt)
-	supportGroup, e := database.GetSupportGroup(ctx.EffectiveUser.Id)
-	if e != nil {
-		core.Log.Errorln("Couldn't fetch support group", e)
-	}
 
 	maintainers, e := database.GetMaintainer(deviceInfo.DeviceName)
 
 	if e != nil {
 		core.Log.Errorln("Couldn't fetch maintainers", e)
+	}
+
+	supportGroup, e := database.GetSupportGroup(maintainers[0].UserId)
+	if e != nil {
+		core.Log.Errorln("Couldn't fetch support group", e)
 	}
 
 	msgTxt, e = CreateReleaseText(deviceInfo, uploadUrls, maintainers, supportGroup)
