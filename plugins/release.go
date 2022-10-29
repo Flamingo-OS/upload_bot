@@ -13,12 +13,15 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 )
 
+// validates the release is indeed a flamingo OS file
+// also creates and pushes OTA file
 func validateRelease(fileNames []string) error {
-	deviceInfo, err := core.ParseDeviceInfo(fileNames)
+	deviceInfo, fullOtaFile, incrementalOtaFile, err := core.ParseDeviceInfo(fileNames)
 	if err != nil {
 		return err
 	}
 	core.Log.Info("Parsed device info:", deviceInfo)
+	core.CreateOTACommit(deviceInfo, fullOtaFile, incrementalOtaFile)
 	return nil
 }
 

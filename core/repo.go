@@ -11,7 +11,7 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
 )
 
-func CreateOTACommit(deviceName string, flavour string, fullOtaFile string, incrementalOtaFile string) error {
+func CreateOTACommit(deviceInfo DeviceInfo, fullOtaFile string, incrementalOtaFile string) error {
 	branch := "dev"
 	clonePath := DumpPath + "OTA/"
 	r, err := git.PlainClone(clonePath, false, &git.CloneOptions{
@@ -31,15 +31,15 @@ func CreateOTACommit(deviceName string, flavour string, fullOtaFile string, incr
 
 	formatTime := time.Now().Format("2006-01-02")
 
-	changeLog, _ := CreateChangelog(deviceName, false)
-	writeToFile(clonePath+"ota/"+deviceName+flavour+"changelog"+formatTime, changeLog)
+	changeLog, _ := CreateChangelog(deviceInfo.DeviceName, false)
+	writeToFile(clonePath+"ota/"+deviceInfo.DeviceName+"/"+deviceInfo.Flavour+"/"+"changelog"+formatTime, changeLog)
 	ota, _ := CreateOtaJson(fullOtaFile)
 	jsonData, err := json.MarshalIndent(ota, "", "  ")
 	if err != nil {
 		Log.Error("Error while marshalling json: %s", err)
 		return err
 	}
-	writeToFile(clonePath+"ota/"+deviceName+flavour+"ota.json", string(jsonData))
+	writeToFile(clonePath+"ota/"+deviceInfo.DeviceName+"/"+deviceInfo.Flavour+"/"+"ota.json", string(jsonData))
 	if incrementalOtaFile != "" {
 		ota, _ := CreateOtaJson(incrementalOtaFile)
 		jsonData, err := json.MarshalIndent(ota, "", "  ")
@@ -48,7 +48,7 @@ func CreateOTACommit(deviceName string, flavour string, fullOtaFile string, incr
 			return err
 		}
 
-		writeToFile(clonePath+"ota/"+deviceName+flavour+"incremental_ota.json", string(jsonData))
+		writeToFile(clonePath+"ota/"+deviceInfo.DeviceName+"/"+deviceInfo.Flavour+"/"+"incremental_ota.json", string(jsonData))
 	}
 
 	w, err := r.Worktree()
@@ -63,7 +63,7 @@ func CreateOTACommit(deviceName string, flavour string, fullOtaFile string, incr
 		return err
 	}
 
-	commitMsg := fmt.Sprintf("%s: update %s", deviceName, formatTime)
+	commitMsg := fmt.Sprintf("%s: update %s", deviceInfo.DeviceName, formatTime)
 	_, err = w.Commit(commitMsg, &git.CommitOptions{
 		Author: &object.Signature{
 			Name:  "github-actions[bot]",
