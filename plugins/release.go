@@ -56,6 +56,7 @@ func releaseHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	taskId, err := rand.Int(rand.Reader, big.NewInt(1000000))
 	if err != nil {
 		core.Log.Errorln(err)
+		b.SendMessage(chat.Id, "Something went wrong with cancel tasks?!", &gotgbot.SendMessageOpts{})
 		return err
 	}
 	core.CancelTasks.Insert(taskId.Uint64())
@@ -68,6 +69,7 @@ func releaseHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		core.Log.Error("Something went wrong")
 		return e
 	}
+	defer b.DeleteMessage(chat.Id, m.MessageId, &gotgbot.DeleteMessageOpts{})
 
 	var filePaths []string // stores the downloaded file paths
 	msgTxt = fmt.Sprintf("Initialising download...\nThis might take a while\nYou can cancel using `/cancel %d`", taskId.Uint64())
@@ -122,6 +124,7 @@ func releaseHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	for _, url := range uploadUrls {
 		msgTxt += url + "`, `"
 	}
-	m.EditText(b, msgTxt, &gotgbot.EditMessageTextOpts{ParseMode: "markdown"})
+	core.Log.Info(msgTxt)
+	b.SendMessage(chat.Id, msgTxt, &gotgbot.SendMessageOpts{})
 	return e
 }
