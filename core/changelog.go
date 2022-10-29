@@ -7,7 +7,11 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"golang.org/x/exp/slices"
 )
+
+var repos []string
 
 func findLastDate(device string, isVanilla bool) (time.Time, error) {
 	Log.Info("Finding last date for device %s", device)
@@ -55,4 +59,61 @@ func findNextPage(nextPosUrl string) string {
 		}
 	}
 	return ""
+}
+
+func findRepoUrls(url string, endDate time.Time) error {
+	Log.Info("Finding repo urls for %s", url)
+	var blacklist = []string{"vendor_prebuilts"}
+	if url == "" {
+		Log.Warn("Empty url")
+		return nil
+	}
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		Log.Error("Error while creating request: %s", err)
+		return err
+	}
+	req.Header.Set("Authorization", "token "+Config.GithubToken)
+	req.Header.Set("Accept", "application/vnd.github.v3+json")
+
+	client := &http.Client{}
+	defer client.CloseIdleConnections()
+	resp, err := client.Do(req)
+	if err != nil {
+		Log.Error("Error while sending request: %s", err)
+		return err
+	}
+	defer resp.Body.Close()
+
+	if (resp.StatusCode != 200) || (err != nil) {
+		Log.Error("Status: %d", resp.StatusCode)
+		return err
+	}
+
+	var resBody []map[string]interface{}
+	err = json.NewDecoder(resp.Body).Decode(&resBody)
+	if err != nil {
+		Log.Error("Error while decoding json: %s", err)
+		return err
+	}
+
+	nextLink := resp.Header.Get("Link")
+	if nextLink == "" {
+		Log.Info("No more pages")
+		return fmt.Errorf("no next link found")
+	}
+
+	for _, repo := range resBody {
+		repoName := repo["name"].(string)
+		repoPushed, _ := time.Parse(time.RFC3339, repo["pushed_at"].(string))
+		if slices.Contains(blacklist, repoName) || (endDate.UTC().After(repoPushed.UTC())) {
+			continue
+		}
+		commitsUrl := strings.Replace(repo["commits_url"].(string), "{/sha}", "", 1)
+		repos = append(repos, commitsUrl)
+	}
+
+	findRepoUrls(findNextPage(nextLink), endDate)
+
+	return nil
 }
