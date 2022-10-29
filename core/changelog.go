@@ -159,3 +159,46 @@ func findDeviceRepo(device string) (string, error) {
 
 	return "", fmt.Errorf("no device repo found")
 }
+
+func findCommits(url string, changelog *string, endDate time.Time) error {
+	Log.Info("Finding commits for %s", url)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		Log.Error("Error while creating request: %s", err)
+		return err
+	}
+
+	req.Header.Set("Authorization", "token "+Config.GithubToken)
+	req.Header.Set("Accept", "application/vnd.github.v3+json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		Log.Error("Error while sending request: %s", err)
+		return err
+	}
+	defer resp.Body.Close()
+
+	if (resp.StatusCode != 200) || (err != nil) {
+		Log.Error("Status: %d", resp.StatusCode)
+		return err
+	}
+
+	var commits []map[string]interface{}
+	err = json.NewDecoder(resp.Body).Decode(&commits)
+	if err != nil {
+		Log.Error("Error while decoding json: %s", err)
+		return err
+	}
+
+	for _, commit := range commits {
+		commitDate, _ := time.Parse(time.RFC3339, commit["commit"].(map[string]interface{})["author"].(map[string]interface{})["date"].(string))
+		if endDate.UTC().After(commitDate.UTC()) {
+			break
+		}
+		commitMessage := strings.Split(commit["commit"].(map[string]interface{})["message"].(string), "\n")[0]
+		*changelog += commitMessage + "\n"
+	}
+
+	return nil
+}
