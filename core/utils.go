@@ -2,6 +2,7 @@ package core
 
 import (
 	"archive/zip"
+	"crypto/sha512"
 	"fmt"
 	"io"
 	"os"
@@ -57,4 +58,21 @@ func UnzipFile(zipFilePath string, fileName string) (string, error) {
 		fileInArchive.Close()
 	}
 	return "", nil
+}
+
+func FindShaSum(filePath string) (string, error) {
+	f, err := os.Open(filePath)
+	if err != nil {
+		Log.Error("Error while opening file: %s", err)
+		return "", err
+	}
+	defer f.Close()
+
+	h := sha512.New()
+	if _, err := io.Copy(h, f); err != nil {
+		Log.Error("Error while copying file: %s", err)
+		return "", fmt.Errorf("error while copying file")
+	}
+
+	return fmt.Sprintf("%x", h.Sum(nil)), nil
 }
