@@ -202,3 +202,57 @@ func findCommits(url string, changelog *string, endDate time.Time) error {
 
 	return nil
 }
+
+func findDependencies(device string) error {
+	Log.Info("Finding dependencies for device %s", device)
+	apiUrl := fmt.Sprintf("https://raw.githubusercontent.com/%s/%s/A13/flamingo.dependencies", DeviceOrg, device)
+	req, err := http.NewRequest("GET", apiUrl, nil)
+	if err != nil {
+		Log.Error("Error while creating request: %s", err)
+		return err
+	}
+	req.Header.Set("Authorization", "token "+Config.GithubToken)
+	req.Header.Set("Accept", "application/vnd.github.v3+json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		Log.Error("Error while sending request: %s", err)
+		return err
+	}
+	defer resp.Body.Close()
+
+	if (resp.StatusCode != 200) || (err != nil) {
+		Log.Info("Status: %d", resp.StatusCode)
+		return err
+	}
+
+	var dependencies []map[string]interface{}
+	err = json.NewDecoder(resp.Body).Decode(&dependencies)
+	if err != nil {
+		Log.Error("Error while decoding json: %s", err)
+		return err
+	}
+
+	for _, dependency := range dependencies {
+		depName := dependency["repository"].(string)
+		if dependency["branch"] != nil {
+			continue // skip non-A13 branches
+		}
+		depRemote := DeviceOrg
+		if dependency["remote"] != nil {
+			if dependency["remote"].(string) == "flamingo" {
+				depRemote = "flamingo-OS"
+			} else {
+				continue // skip outside remotes
+			}
+		}
+
+		findDependencies(depName)
+
+		dep := fmt.Sprintf("https://api.github.com/repos/%s/%s/commits", depRemote, depName)
+		repos = append(repos, dep)
+	}
+
+	return nil
+}
