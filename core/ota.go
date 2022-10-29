@@ -18,19 +18,20 @@ type OTA struct {
 }
 
 func CreateOtaJson(zipFilePath string, deviceInfo DeviceInfo) (OTA, error) {
+	Log.Info("Creating OTA json for: ", zipFilePath)
 	fileStat, err := os.Stat(zipFilePath)
 	if err != nil {
-		Log.Error("Error while getting file stats: %s", err)
+		Log.Error("Error while getting file stats:", err)
 		return OTA{}, err
 	}
-	a, err := UnzipFile(zipFilePath, fileStat.Name())
+	a, err := UnzipFile(zipFilePath, strings.Trim(fileStat.Name(), ".zip"))
 	if err != nil {
-		Log.Error("Error while unzipping file: %s", err)
+		Log.Error("Error while unzipping file:", err)
 		return OTA{}, err
 	}
 	file, err := os.Open(fmt.Sprintf("%s/META-INF/com/android/metadata", a))
 	if err != nil {
-		Log.Error("Error while opening file: %s", err)
+		Log.Error("Error while opening file:", err)
 		return OTA{}, err
 	}
 	defer file.Close()
@@ -49,7 +50,7 @@ func CreateOtaJson(zipFilePath string, deviceInfo DeviceInfo) (OTA, error) {
 
 	sha_512, err := FindShaSum(zipFilePath)
 	if err != nil {
-		Log.Error("Error while finding sha512: %s", err)
+		Log.Error("Error while finding sha512:", err)
 		return OTA{}, err
 	}
 
@@ -66,9 +67,11 @@ func CreateOtaJson(zipFilePath string, deviceInfo DeviceInfo) (OTA, error) {
 	}
 
 	if err := scanner.Err(); err != nil {
-		Log.Error("Error while scanning file: %s", err)
+		Log.Error("Error while scanning file:", err)
 		return OTA{}, err
 	}
+
+	Log.Info("Ota json was created as:", ota)
 
 	return ota, nil
 }
