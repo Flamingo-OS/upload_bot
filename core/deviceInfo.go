@@ -33,9 +33,9 @@ func ParseDeviceInfo(fileName []string) (DeviceInfo, string, string, error) {
 		}
 	}
 
-	if fullOtaFile == "" {
-		return DeviceInfo{}, "", "", fmt.Errorf("full build not found")
-	}
+	// if fullOtaFile == "" {
+	// 	return DeviceInfo{}, "", "", fmt.Errorf("full build not found")
+	// }
 
 	deviceDets := strings.Split(fileName[0], "-")
 	if len(deviceDets) < 9 {

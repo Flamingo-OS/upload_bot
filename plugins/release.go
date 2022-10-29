@@ -105,7 +105,7 @@ func releaseHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	var uploadUrls []string
 	for _, f := range filePaths {
 		uploadFolder := core.Branch + "/" + deviceInfo.DeviceName + "/" + deviceInfo.Flavour
-		err := documents.OneDriveUploader(f, "flamingo"+"/"+uploadFolder)
+		err := documents.OneDriveUploader(f, "YAY"+"/"+uploadFolder)
 		if err != nil {
 			core.Log.Errorln(err)
 			b.SendMessage(chat.Id, "Upload failed. Please try again or ask darknanobot", &gotgbot.SendMessageOpts{})
