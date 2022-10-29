@@ -207,7 +207,11 @@ func releaseHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		core.Log.Errorln("Couldn't create release text", e)
 		b.SendMessage(chat.Id, "Something went wrong while creating release", &gotgbot.SendMessageOpts{})
 	}
-	_, e = b.SendPhoto(ctx.EffectiveChat.Id, bannerLink, &gotgbot.SendPhotoOpts{
+	_, _ = b.SendPhoto(chat.Id, bannerLink, &gotgbot.SendPhotoOpts{
+		Caption:   msgTxt,
+		ParseMode: "Markdown",
+	})
+	_, e = b.SendPhoto(core.UpdateChannelId, bannerLink, &gotgbot.SendPhotoOpts{
 		Caption:   msgTxt,
 		ParseMode: "Markdown",
 	})

@@ -21,3 +21,4 @@ const DeviceOrg = "FlamingoOS-Devices"
 const MainOrg = "Flamingo-OS"
 const Branch = "A13"
 const BaseUrl = "https://downloads.e11z.net/flamingo/"
+const UpdateChannelId = -1001655954786
