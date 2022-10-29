@@ -2,9 +2,7 @@ package core
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
-	"log"
 )
 
 type BotConfig struct {
@@ -27,11 +25,11 @@ func NewBotConfig(fileName string) *BotConfig {
 	ac := &BotConfig{}
 	b, err := ioutil.ReadFile(fileName)
 	if err != nil {
-		fmt.Print(err)
+		Log.Fatal(err)
 	}
 	err = json.Unmarshal(b, &ac)
 	if err != nil {
-		log.Fatal(err)
+		Log.Fatal(err)
 	}
 	return ac
 }
