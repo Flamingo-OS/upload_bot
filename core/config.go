@@ -20,6 +20,7 @@ type BotConfig struct {
 	OneDriveClientSecret    string `json:"onedrive_client_secret"`
 	OneDriveTenantId        string `json:"onedrive_tenant_id"`
 	OneDriveRefreshToken    string `json:"onedrive_refresh_token"`
+	GithubToken             string `json:"github_token"`
 }
 
 func NewBotConfig(fileName string) *BotConfig {
