@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -45,4 +46,13 @@ func findLastDate(device string, isVanilla bool) (time.Time, error) {
 	date := time.Unix(timestamp/1000, 0)
 	Log.Info("Found last date for device %s: %s", device, date)
 	return date, nil
+}
+
+func findNextPage(nextPosUrl string) string {
+	for _, link := range strings.Split(nextPosUrl, ",") {
+		if strings.Contains(link, "rel=\"next\"") {
+			return strings.Trim(strings.Trim(strings.Trim(strings.Split(link, ";")[0], " "), "<"), ">")
+		}
+	}
+	return ""
 }
