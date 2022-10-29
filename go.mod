@@ -24,14 +24,11 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/sergi/go-diff v1.1.0 // indirect
 	github.com/xanzy/ssh-agent v0.3.0 // indirect
-	gopkg.in/sourcegraph/go-vcsurl.v1 v1.0.0-20131114132947-6b12603ea6fd // indirect
-	gopkg.in/src-d/go-git.v3 v3.2.0 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 )
 
 require (
 	cloud.google.com/go/compute v1.10.0 // indirect
-	github.com/go-git/go-git v3.2.0+incompatible
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
