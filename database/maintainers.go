@@ -71,12 +71,31 @@ func RemoveMaintainer(userId int64) error {
 	return err
 }
 
+func GetMaintainer(device string) ([]Maintainers, error) {
+	core.Log.Info("Fetching maintainers for device: ", device)
+	filter := bson.M{"devices": device}
+	cur, err := core.Collection.Find(context.Background(), filter)
+	if err != nil {
+		return nil, err
+	}
+	var maintainers []Maintainers
+	for cur.Next(context.Background()) {
+		var maintainer Maintainers
+		err := cur.Decode(&maintainer)
+		if err != nil {
+			return nil, err
+		}
+		maintainers = append(maintainers, maintainer)
+	}
+	return maintainers, nil
+}
+
 func GetAllMaintainers() []Maintainers {
 	core.Log.Infoln("Fetching details of all maintainers")
 	filter := bson.M{}
 	cur, err := core.Collection.Find(context.Background(), filter)
 	if err != nil {
-		core.Log.Fatal(err)
+		core.Log.Error(err)
 		return []Maintainers{}
 	}
 
