@@ -124,7 +124,8 @@ func releaseHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	for _, url := range uploadUrls {
 		msgTxt += url + "`, `"
 	}
+	msgTxt = strings.Trim(msgTxt, ", `")
 	core.Log.Info(msgTxt)
-	b.SendMessage(chat.Id, msgTxt, &gotgbot.SendMessageOpts{})
+	b.SendMessage(chat.Id, msgTxt, &gotgbot.SendMessageOpts{ParseMode: "markdown"})
 	return e
 }
