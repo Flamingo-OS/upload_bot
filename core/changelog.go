@@ -13,8 +13,11 @@ import (
 	"golang.org/x/exp/slices"
 )
 
+// stores all repos from where we can get the commits
+// includes repos from flamingoOS org and for resp devices in our org
 var repos []string
 
+// find the last update date
 func findLastDate(device string, isVanilla bool) (time.Time, error) {
 	Log.Info("Finding last date for device %s", device)
 	buildType := "GApps"
@@ -54,6 +57,7 @@ func findLastDate(device string, isVanilla bool) (time.Time, error) {
 	return date, nil
 }
 
+// given the next url, extract url for next page
 func findNextPage(nextPosUrl string) string {
 	for _, link := range strings.Split(nextPosUrl, ",") {
 		if strings.Contains(link, "rel=\"next\"") {
@@ -63,6 +67,7 @@ func findNextPage(nextPosUrl string) string {
 	return ""
 }
 
+// find all repos from Flamingo-OS org
 func findRepoUrls(url string, endDate time.Time) error {
 	Log.Info("Finding repo urls for %s", url)
 	var blacklist = []string{"vendor_prebuilts"}
@@ -120,6 +125,7 @@ func findRepoUrls(url string, endDate time.Time) error {
 	return nil
 }
 
+// Find the device repo given device name
 func findDeviceRepo(device string) (string, error) {
 	Log.Info("Finding repo for device %s", device)
 	apiUrl := fmt.Sprintf("https://api.github.com/search/repositories?q=%s+user:%s+in:name+fork:true", device, DeviceOrg)
@@ -162,6 +168,7 @@ func findDeviceRepo(device string) (string, error) {
 	return "", fmt.Errorf("no device repo found")
 }
 
+// Find the required commtis
 func findCommits(url string, changelog *string, endDate time.Time) error {
 	Log.Info("Finding commits for %s", url)
 	req, err := http.NewRequest("GET", url, nil)
@@ -205,9 +212,10 @@ func findCommits(url string, changelog *string, endDate time.Time) error {
 	return nil
 }
 
+// find all deps for a device
 func findDependencies(device string) error {
 	Log.Info("Finding dependencies for device %s", device)
-	apiUrl := fmt.Sprintf("https://raw.githubusercontent.com/%s/%s/A13/flamingo.dependencies", DeviceOrg, device)
+	apiUrl := fmt.Sprintf("https://raw.githubusercontent.com/%s/%s/%s/flamingo.dependencies", DeviceOrg, device, Branch)
 	req, err := http.NewRequest("GET", apiUrl, nil)
 	if err != nil {
 		Log.Error("Error while creating request: %s", err)
@@ -239,7 +247,7 @@ func findDependencies(device string) error {
 	for _, dependency := range dependencies {
 		depName := dependency["repository"].(string)
 		if dependency["branch"] != nil {
-			continue // skip non-A13 branches
+			continue // skip non-main branches
 		}
 		depRemote := DeviceOrg
 		if dependency["remote"] != nil {
@@ -259,6 +267,9 @@ func findDependencies(device string) error {
 	return nil
 }
 
+// create changelog for a single repo
+// it will all be writen to a single changelog string
+// Fully multi threaded and async
 func createChangelogs(ch *string, repo string, date time.Time, mut *sync.Mutex, wg *sync.WaitGroup) {
 	defer wg.Done()
 	var changelog string
@@ -276,6 +287,7 @@ func createChangelogs(ch *string, repo string, date time.Time, mut *sync.Mutex, 
 	}
 }
 
+// Main handler.
 func CreateChangelog(deviceName string, isVanilla bool) error {
 	Log.Info("Creating changelog")
 	var wg sync.WaitGroup
