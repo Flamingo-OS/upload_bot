@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/big"
 	"os"
+	"strings"
 
 	"github.com/Flamingo-OS/upload-bot/core"
 	"github.com/Flamingo-OS/upload-bot/database"
@@ -101,17 +102,26 @@ func releaseHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	// upload the files
 	msgTxt = fmt.Sprintf("Uploading files...\nYou can cancel using `/cancel %d`", taskId.Uint64())
 	m.EditText(b, msgTxt, &gotgbot.EditMessageTextOpts{ParseMode: "markdown"})
+	var uploadUrls []string
 	for _, f := range filePaths {
-		uploadFolder := "flamingo" + "/" + core.Branch + "/" + deviceInfo.DeviceName + "/" + deviceInfo.Flavour
-		err := documents.OneDriveUploader(f, uploadFolder)
+		uploadFolder := core.Branch + "/" + deviceInfo.DeviceName + "/" + deviceInfo.Flavour
+		err := documents.OneDriveUploader(f, "flamingo"+"/"+uploadFolder)
 		if err != nil {
 			core.Log.Errorln(err)
 			b.SendMessage(chat.Id, "Upload failed. Please try again or ask darknanobot", &gotgbot.SendMessageOpts{})
 			return err
 		}
+		fileName := strings.Split(f, "/")[len(strings.Split(f, "/"))-1]
+		uploadUrl := core.BaseUrl + "/" + uploadFolder + "/" + fileName
+		uploadUrls = append(uploadUrls, uploadUrl)
 		msgTxt = fmt.Sprintf("Uploaded file %s\nYou can cancel using `/cancel %d`", f, taskId.Uint64())
 		m.EditText(b, msgTxt, &gotgbot.EditMessageTextOpts{ParseMode: "markdown"})
 	}
 
+	msgTxt = "Uploaded file to `"
+	for _, url := range uploadUrls {
+		msgTxt += url + "`, `"
+	}
+	m.EditText(b, msgTxt, &gotgbot.EditMessageTextOpts{ParseMode: "markdown"})
 	return e
 }

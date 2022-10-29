@@ -14,7 +14,7 @@ import (
 
 func CreateOTACommit(deviceInfo DeviceInfo, fullOtaFile string, incrementalOtaFile string) error {
 	Log.Info("Creating OTA commits")
-	branch := "dev"
+	branch := "main"
 	clonePath := DumpPath + "OTA/"
 	otaPath := deviceInfo.DeviceName + "/" + deviceInfo.Flavour + "/" + "ota.json"
 	incrementalOtaPath := deviceInfo.DeviceName + "/" + deviceInfo.Flavour + "/" + "incremental_ota.json"
