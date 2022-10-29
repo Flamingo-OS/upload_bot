@@ -6,6 +6,7 @@ require (
 	github.com/PaulSonOfLars/gotgbot/v2 v2.0.0-rc.11
 	go.mongodb.org/mongo-driver v1.10.3
 	go.uber.org/zap v1.23.0
+	golang.org/x/exp v0.0.0-20221028150844-83b7d23a625f
 	golang.org/x/oauth2 v0.1.0
 	google.golang.org/api v0.100.0
 )
@@ -29,7 +30,6 @@ require (
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
 	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d // indirect
-	golang.org/x/exp v0.0.0-20221028150844-83b7d23a625f // indirect
 	golang.org/x/net v0.1.0 // indirect
 	golang.org/x/sync v0.0.0-20220929204114-8fcdb60fdcc0 // indirect
 	golang.org/x/sys v0.1.0 // indirect
