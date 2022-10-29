@@ -75,7 +75,7 @@ func CreateReleaseText(deviceInfo core.DeviceInfo, urls []string, maintainers []
 	}
 	msgTxt += fmt.Sprintf(`
 
-		Changes:	[Changelog](%s)
+		[Changelog](%s)
 	
 		Support Groups
 		-	[Common](https://t.me/flamingo_common)
