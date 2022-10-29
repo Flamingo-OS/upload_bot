@@ -3,6 +3,7 @@ package core
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/go-git/go-git/v5"
@@ -12,8 +13,13 @@ import (
 )
 
 func CreateOTACommit(deviceInfo DeviceInfo, fullOtaFile string, incrementalOtaFile string) error {
+	Log.Info("Creating OTA commits")
 	branch := "dev"
 	clonePath := DumpPath + "OTA/"
+	otaPath := deviceInfo.DeviceName + "/" + deviceInfo.Flavour + "/" + "ota.json"
+	incrementalOtaPath := deviceInfo.DeviceName + "/" + deviceInfo.Flavour + "/" + "incremental_ota.json"
+	changelogPath := ""
+
 	r, err := git.PlainClone(clonePath, false, &git.CloneOptions{
 		Auth: &http.BasicAuth{
 			Username: "npv12",
@@ -32,14 +38,15 @@ func CreateOTACommit(deviceInfo DeviceInfo, fullOtaFile string, incrementalOtaFi
 	formatTime := time.Now().Format("2006-01-02")
 
 	changeLog, _ := CreateChangelog(deviceInfo.DeviceName, false)
-	writeToFile(clonePath+"ota/"+deviceInfo.DeviceName+"/"+deviceInfo.Flavour+"/"+"changelog"+formatTime, changeLog)
+	changelogPath = deviceInfo.DeviceName + "/" + deviceInfo.Flavour + "/" + "changelog_" + strings.ReplaceAll(formatTime, "-", "_")
+	writeToFile(clonePath+changelogPath, changeLog)
 	ota, _ := CreateOtaJson(fullOtaFile, deviceInfo)
 	jsonData, err := json.MarshalIndent(ota, "", "  ")
 	if err != nil {
 		Log.Error("Error while marshalling json: %s", err)
 		return err
 	}
-	writeToFile(clonePath+"ota/"+deviceInfo.DeviceName+"/"+deviceInfo.Flavour+"/"+"ota.json", string(jsonData))
+	writeToFile(clonePath+otaPath, string(jsonData))
 	if incrementalOtaFile != "" {
 		ota, _ := CreateOtaJson(incrementalOtaFile, deviceInfo)
 		jsonData, err := json.MarshalIndent(ota, "", "  ")
@@ -48,7 +55,7 @@ func CreateOTACommit(deviceInfo DeviceInfo, fullOtaFile string, incrementalOtaFi
 			return err
 		}
 
-		writeToFile(clonePath+"ota/"+deviceInfo.DeviceName+"/"+deviceInfo.Flavour+"/"+"incremental_ota.json", string(jsonData))
+		writeToFile(clonePath+incrementalOtaPath, string(jsonData))
 	}
 
 	w, err := r.Worktree()
@@ -57,11 +64,9 @@ func CreateOTACommit(deviceInfo DeviceInfo, fullOtaFile string, incrementalOtaFi
 		return err
 	}
 
-	_, err = w.Status()
-	if err != nil {
-		Log.Error("Error while getting status: %s", err)
-		return err
-	}
+	w.Add(changelogPath)
+	w.Add(otaPath)
+	w.Add(incrementalOtaPath)
 
 	commitMsg := fmt.Sprintf("%s: update %s", deviceInfo.DeviceName, formatTime)
 	_, err = w.Commit(commitMsg, &git.CommitOptions{
