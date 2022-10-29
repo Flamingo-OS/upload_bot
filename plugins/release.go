@@ -13,6 +13,15 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 )
 
+func validateRelease(fileNames []string) error {
+	deviceInfo, err := core.ParseDeviceInfo(fileNames)
+	if err != nil {
+		return err
+	}
+	core.Log.Info("Parsed device info:", deviceInfo)
+	return nil
+}
+
 func releaseHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	chat := ctx.EffectiveChat
 	core.Log.Infoln("Recieved request to handle /release")
@@ -76,20 +85,27 @@ func releaseHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		}
 	}
 
-	// upload the files
-	// TODO: upload it to a specific dir instead of some random dir
-	msgTxt = fmt.Sprintf("Uploading files...\nYou can cancel using `/cancel %d`", taskId.Uint64())
-	m.EditText(b, msgTxt, &gotgbot.EditMessageTextOpts{ParseMode: "markdown"})
-	for _, f := range filePaths {
-		err := documents.OneDriveUploader(f, "YAY1")
-		if err != nil {
-			core.Log.Errorln(err)
-			b.SendMessage(chat.Id, "Upload failed. Please try again or ask darknanobot", &gotgbot.SendMessageOpts{})
-			return err
-		}
-		msgTxt = fmt.Sprintf("Uploaded file %s\nYou can cancel using `/cancel %d`", f, taskId.Uint64())
-		m.EditText(b, msgTxt, &gotgbot.EditMessageTextOpts{ParseMode: "markdown"})
+	err = validateRelease(filePaths)
+	if err != nil {
+		core.Log.Errorln(err)
+		b.SendMessage(chat.Id, fmt.Sprintf("Release failed due to: %s", err), &gotgbot.SendMessageOpts{})
+		return err
 	}
+
+	// // upload the files
+	// // TODO: upload it to a specific dir instead of some random dir
+	// msgTxt = fmt.Sprintf("Uploading files...\nYou can cancel using `/cancel %d`", taskId.Uint64())
+	// m.EditText(b, msgTxt, &gotgbot.EditMessageTextOpts{ParseMode: "markdown"})
+	// for _, f := range filePaths {
+	// 	err := documents.OneDriveUploader(f, "YAY1")
+	// 	if err != nil {
+	// 		core.Log.Errorln(err)
+	// 		b.SendMessage(chat.Id, "Upload failed. Please try again or ask darknanobot", &gotgbot.SendMessageOpts{})
+	// 		return err
+	// 	}
+	// 	msgTxt = fmt.Sprintf("Uploaded file %s\nYou can cancel using `/cancel %d`", f, taskId.Uint64())
+	// 	m.EditText(b, msgTxt, &gotgbot.EditMessageTextOpts{ParseMode: "markdown"})
+	// }
 
 	return e
 }

@@ -6,20 +6,39 @@ import (
 )
 
 type DeviceInfo struct {
-	DeviceName  string `json:"device_name"`
-	Version     string `json:"version"`
-	BuildDate   string `json:"build_date"`
-	BuildType   string `json:"build_type"` // user, userdebug, eng
-	Flavour     string `json:"flavour"`
-	BuildFormat string `json:"build_format"` // full, incremental, etc
+	DeviceName  string   `json:"device_name"`
+	Version     string   `json:"version"`
+	BuildDate   string   `json:"build_date"`
+	BuildType   string   `json:"build_type"` // user, userdebug, eng
+	Flavour     string   `json:"flavour"`
+	BuildFormat []string `json:"build_format"` // full, incremental, etc
 }
 
-func ParseDeviceInfo(fileName string) (DeviceInfo, error) {
-	deviceDets := strings.Split(fileName, "-")
+func ParseDeviceInfo(fileName []string) (DeviceInfo, error) {
+	Log.Info("Parsing device info from ", fileName)
+	buildFormats := []string{}
+
+	for _, file := range fileName {
+		if strings.Contains(file, "full") {
+			buildFormats = append(buildFormats, "full")
+		} else if strings.Contains(file, "incremental") {
+			buildFormats = append(buildFormats, "incremental")
+		} else if strings.Contains(file, "fastboot") {
+			buildFormats = append(buildFormats, "fastboot")
+		} else if strings.Contains(file, "boot") {
+			buildFormats = append(buildFormats, "boot")
+		}
+	}
+
+	// if !slices.Contains(buildFormats, "full") {
+	// 	return DeviceInfo{}, fmt.Errorf("full build not found")
+	// }
+
+	deviceDets := strings.Split(fileName[0], "-")
 	if len(deviceDets) < 9 {
 		return DeviceInfo{}, fmt.Errorf("invalid file. This isn't a flamingoOS file")
 	}
-	if deviceDets[0] != "FlamingoOS" && deviceDets[4] != "Official" {
+	if strings.Contains(deviceDets[0], "FlamingoOS") && deviceDets[4] != "Official" {
 		return DeviceInfo{}, fmt.Errorf("invalid file. This isn't a flamingoOS file")
 	}
 
@@ -31,6 +50,6 @@ func ParseDeviceInfo(fileName string) (DeviceInfo, error) {
 		BuildType:   deviceDets[3],
 		Flavour:     deviceDets[5],
 		BuildDate:   deviceDets[6],
-		BuildFormat: deviceDets[8],
+		BuildFormat: buildFormats,
 	}, nil
 }
