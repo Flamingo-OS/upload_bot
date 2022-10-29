@@ -155,7 +155,7 @@ func releaseHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		}
 	}
 
-	msgTxt = fmt.Sprintf("Finished Uploading ....\nValidating release...\nYou can cancel using `/cancel %d`", taskId.Uint64())
+	msgTxt = fmt.Sprintf("Finished Downloading ....\nValidating release...\nYou can cancel using `/cancel %d`", taskId.Uint64())
 	m.EditText(b, msgTxt, &gotgbot.EditMessageTextOpts{ParseMode: "markdown"})
 
 	deviceInfo, err := validateRelease(filePaths)
