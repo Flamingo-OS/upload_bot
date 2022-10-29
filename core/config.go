@@ -3,6 +3,7 @@ package core
 import (
 	"encoding/json"
 	"io/ioutil"
+	"os"
 )
 
 type BotConfig struct {
@@ -12,7 +13,6 @@ type BotConfig struct {
 	GDriveClientSecret      string `json:"gdrive_client_secret"`
 	GDriveAccessToken       string `json:"gdrive_access_token"`
 	GDriveRefreshToken      string `json:"gdrive_refresh_token"`
-	GDriveTokenType         string `json:"gdrive_token_type"`
 	GDriveExpiry            string `json:"gdrive_expiry"`
 	OneDriveClientId        string `json:"onedrive_client_id"`
 	OneDriveClientSecret    string `json:"onedrive_client_secret"`
@@ -25,11 +25,50 @@ func NewBotConfig(fileName string) *BotConfig {
 	ac := &BotConfig{}
 	b, err := ioutil.ReadFile(fileName)
 	if err != nil {
-		Log.Fatal(err)
+		Log.Error(err)
+		Log.Info("Reading config from environment")
+		ac = configFromEnv()
+		return ac
 	}
 	err = json.Unmarshal(b, &ac)
 	if err != nil {
 		Log.Fatal(err)
 	}
 	return ac
+}
+
+func configFromEnv() *BotConfig {
+	ac := &BotConfig{}
+	var isPresent bool
+	ac.BotToken, isPresent = os.LookupEnv("BOT_TOKEN")
+	checkIfPresent(isPresent, "BOT_TOKEN")
+	ac.MongoDbConnectionString, isPresent = os.LookupEnv("MONGO_DB_CONNECTION_STRING")
+	checkIfPresent(isPresent, "MONGO_DB_CONNECTION_STRING")
+	ac.GDriveClientId, isPresent = os.LookupEnv("GDRIVE_CLIENT_ID")
+	checkIfPresent(isPresent, "GDRIVE_CLIENT_ID")
+	ac.GDriveClientSecret, isPresent = os.LookupEnv("GDRIVE_CLIENT_SECRET")
+	checkIfPresent(isPresent, "GDRIVE_CLIENT_SECRET")
+	ac.GDriveExpiry, isPresent = os.LookupEnv("GDRIVE_EXPIRY")
+	checkIfPresent(isPresent, "GDRIVE_EXPIRY")
+	ac.GDriveAccessToken, isPresent = os.LookupEnv("GDRIVE_ACCESS_TOKEN")
+	checkIfPresent(isPresent, "GDRIVE_ACCESS_TOKEN")
+	ac.GDriveRefreshToken, isPresent = os.LookupEnv("GDRIVE_REFRESH_TOKEN")
+	checkIfPresent(isPresent, "GDRIVE_REFRESH_TOKEN")
+	ac.OneDriveClientId, isPresent = os.LookupEnv("ONEDRIVE_CLIENT_ID")
+	checkIfPresent(isPresent, "ONEDRIVE_CLIENT_ID")
+	ac.OneDriveClientSecret, isPresent = os.LookupEnv("ONEDRIVE_CLIENT_SECRET")
+	checkIfPresent(isPresent, "ONEDRIVE_CLIENT_SECRET")
+	ac.OneDriveTenantId, isPresent = os.LookupEnv("ONEDRIVE_TENANT_ID")
+	checkIfPresent(isPresent, "ONEDRIVE_TENANT_ID")
+	ac.OneDriveRefreshToken, isPresent = os.LookupEnv("ONEDRIVE_REFRESH_TOKEN")
+	checkIfPresent(isPresent, "ONEDRIVE_REFRESH_TOKEN")
+	ac.GithubToken, isPresent = os.LookupEnv("GITHUB_TOKEN")
+	checkIfPresent(isPresent, "GITHUB_TOKEN")
+	return ac
+}
+
+func checkIfPresent(isPresent bool, envVar string) {
+	if !isPresent {
+		Log.Fatalf("%s is not present in the environment", envVar)
+	}
 }
