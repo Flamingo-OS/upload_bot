@@ -15,17 +15,17 @@ import (
 
 // validates the release is indeed a flamingo OS file
 // also creates and pushes OTA file
-func validateRelease(fileNames []string) error {
+func validateRelease(fileNames []string) (core.DeviceInfo, error) {
 	deviceInfo, fullOtaFile, incrementalOtaFile, err := core.ParseDeviceInfo(fileNames)
 	if err != nil {
-		return err
+		return core.DeviceInfo{}, err
 	}
 	core.Log.Info("Parsed device info:", deviceInfo)
 	err = core.CreateOTACommit(deviceInfo, fullOtaFile, incrementalOtaFile)
 	if err != nil {
-		return err
+		return deviceInfo, err
 	}
-	return nil
+	return deviceInfo, err
 }
 
 func releaseHandler(b *gotgbot.Bot, ctx *ext.Context) error {
@@ -91,27 +91,27 @@ func releaseHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		}
 	}
 
-	err = validateRelease(filePaths)
+	deviceInfo, err := validateRelease(filePaths)
 	if err != nil {
 		core.Log.Errorln(err)
 		b.SendMessage(chat.Id, fmt.Sprintf("Release failed due to: %s", err), &gotgbot.SendMessageOpts{})
 		return err
 	}
 
-	// // upload the files
-	// // TODO: upload it to a specific dir instead of some random dir
-	// msgTxt = fmt.Sprintf("Uploading files...\nYou can cancel using `/cancel %d`", taskId.Uint64())
-	// m.EditText(b, msgTxt, &gotgbot.EditMessageTextOpts{ParseMode: "markdown"})
-	// for _, f := range filePaths {
-	// 	err := documents.OneDriveUploader(f, "YAY1")
-	// 	if err != nil {
-	// 		core.Log.Errorln(err)
-	// 		b.SendMessage(chat.Id, "Upload failed. Please try again or ask darknanobot", &gotgbot.SendMessageOpts{})
-	// 		return err
-	// 	}
-	// 	msgTxt = fmt.Sprintf("Uploaded file %s\nYou can cancel using `/cancel %d`", f, taskId.Uint64())
-	// 	m.EditText(b, msgTxt, &gotgbot.EditMessageTextOpts{ParseMode: "markdown"})
-	// }
+	// upload the files
+	msgTxt = fmt.Sprintf("Uploading files...\nYou can cancel using `/cancel %d`", taskId.Uint64())
+	m.EditText(b, msgTxt, &gotgbot.EditMessageTextOpts{ParseMode: "markdown"})
+	for _, f := range filePaths {
+		uploadFolder := "flamingo" + "/" + core.Branch + "/" + deviceInfo.DeviceName + "/" + deviceInfo.Flavour
+		err := documents.OneDriveUploader(f, uploadFolder)
+		if err != nil {
+			core.Log.Errorln(err)
+			b.SendMessage(chat.Id, "Upload failed. Please try again or ask darknanobot", &gotgbot.SendMessageOpts{})
+			return err
+		}
+		msgTxt = fmt.Sprintf("Uploaded file %s\nYou can cancel using `/cancel %d`", f, taskId.Uint64())
+		m.EditText(b, msgTxt, &gotgbot.EditMessageTextOpts{ParseMode: "markdown"})
+	}
 
 	return e
 }
