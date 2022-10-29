@@ -26,8 +26,18 @@ func NewBotConfig(fileName string) *BotConfig {
 	b, err := ioutil.ReadFile(fileName)
 	if err != nil {
 		Log.Error(err)
-		Log.Info("Reading config from environment")
-		ac = configFromEnv()
+		Log.Info("Reading config for docker container")
+		b, err := ioutil.ReadFile("/etc/secrets/config.json") // for docker
+		if err != nil {
+			Log.Error(err)
+			Log.Info("Reading config from environment")
+			ac = configFromEnv()
+			return ac
+		}
+		err = json.Unmarshal(b, ac)
+		if err != nil {
+			Log.Fatal(err)
+		}
 		return ac
 	}
 	err = json.Unmarshal(b, &ac)
