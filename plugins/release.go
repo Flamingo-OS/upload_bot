@@ -21,7 +21,10 @@ func validateRelease(fileNames []string) error {
 		return err
 	}
 	core.Log.Info("Parsed device info:", deviceInfo)
-	core.CreateOTACommit(deviceInfo, fullOtaFile, incrementalOtaFile)
+	err = core.CreateOTACommit(deviceInfo, fullOtaFile, incrementalOtaFile)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
