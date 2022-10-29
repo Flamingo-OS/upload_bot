@@ -17,7 +17,7 @@ type OTA struct {
 	PreBuildIncremental string            `json:"pre_build_incremental,omitempty"`
 }
 
-func CreateOtaJson(zipFilePath string) (OTA, error) {
+func CreateOtaJson(zipFilePath string, deviceInfo DeviceInfo) (OTA, error) {
 	fileStat, err := os.Stat(zipFilePath)
 	if err != nil {
 		Log.Error("Error while getting file stats: %s", err)
@@ -47,17 +47,18 @@ func CreateOtaJson(zipFilePath string) (OTA, error) {
 		}
 	}
 
-	version := strings.Replace(strings.Split(fileStat.Name(), "-")[1], "v", "", 1)
 	sha_512, err := FindShaSum(zipFilePath)
 	if err != nil {
 		Log.Error("Error while finding sha512: %s", err)
 		return OTA{}, err
 	}
 
+	url := BaseUrl + Branch + "/" + deviceInfo.DeviceName + "/" + deviceInfo.Flavour + "/" + fileStat.Name()
+
 	ota := OTA{
-		Version:             version,
+		Version:             deviceInfo.Version,
 		Date:                postTimestamp,
-		DownloadSources:     map[string]string{"OneDrive": "https://sourceforge.net/projects/"},
+		DownloadSources:     map[string]string{"OneDrive": url},
 		FileName:            fileStat.Name(),
 		FileSize:            fmt.Sprint(fileStat.Size()),
 		ShaSum:              sha_512,

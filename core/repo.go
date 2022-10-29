@@ -33,7 +33,7 @@ func CreateOTACommit(deviceInfo DeviceInfo, fullOtaFile string, incrementalOtaFi
 
 	changeLog, _ := CreateChangelog(deviceInfo.DeviceName, false)
 	writeToFile(clonePath+"ota/"+deviceInfo.DeviceName+"/"+deviceInfo.Flavour+"/"+"changelog"+formatTime, changeLog)
-	ota, _ := CreateOtaJson(fullOtaFile)
+	ota, _ := CreateOtaJson(fullOtaFile, deviceInfo)
 	jsonData, err := json.MarshalIndent(ota, "", "  ")
 	if err != nil {
 		Log.Error("Error while marshalling json: %s", err)
@@ -41,7 +41,7 @@ func CreateOTACommit(deviceInfo DeviceInfo, fullOtaFile string, incrementalOtaFi
 	}
 	writeToFile(clonePath+"ota/"+deviceInfo.DeviceName+"/"+deviceInfo.Flavour+"/"+"ota.json", string(jsonData))
 	if incrementalOtaFile != "" {
-		ota, _ := CreateOtaJson(incrementalOtaFile)
+		ota, _ := CreateOtaJson(incrementalOtaFile, deviceInfo)
 		jsonData, err := json.MarshalIndent(ota, "", "  ")
 		if err != nil {
 			Log.Error("Error while marshalling json: %s", err)
