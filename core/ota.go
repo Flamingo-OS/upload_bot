@@ -42,7 +42,7 @@ func CreateOtaJson(zipFilePath string, deviceInfo DeviceInfo) (OTA, error) {
 	for scanner.Scan() {
 		text := scanner.Text()
 		if strings.Contains(text, "post-timestamp=") {
-			postTimestamp = strings.Replace(text, "post-timestamp=", "", -1)
+			postTimestamp = strings.Replace(text, "post-timestamp=", "", -1) + "000"
 		} else if strings.Contains(text, "pre-build-incremental=") {
 			preBuildIncremental = strings.Replace(text, "pre-build-incremental=", "", -1)
 		}
