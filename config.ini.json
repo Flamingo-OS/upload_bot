@@ -1,0 +1,14 @@
+{
+    "bot_token": "bot token",
+    "connection_string": "mongo db connection string",
+    "gdrive_client_id": "",
+    "gdrive_client_secret": "",
+    "gdrive_access_token": "",
+    "gdrive_refresh_token": "",
+    "gdrive_expiry": "",
+    "github_token": "",
+    "onedrive_tenant_id": "",
+    "onedrive_client_id": "",
+    "onedrive_client_secret": "",
+    "onedrive_refresh_token": ""
+}
