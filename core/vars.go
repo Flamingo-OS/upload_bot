@@ -17,3 +17,5 @@ var DriveService *drive.Service  // Gdrive service
 var DriveClient *http.Client     // Gdrive client
 
 const DumpPath string = "Dumpster/"
+const DeviceOrg = "FlamingoOS-Devices"
+const Branch = "A13"
