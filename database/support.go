@@ -14,3 +14,11 @@ func AddSupportGroup(userId int64, supportGroup string) error {
 	_, err := core.Collection.UpdateOne(context.Background(), filter, update)
 	return err
 }
+
+func GetSupportGroup(userId int64) (string, error) {
+	core.Log.Infoln("Getting support group")
+	var user Maintainers
+	filter := bson.M{"user_id": userId}
+	err := core.Collection.FindOne(context.Background(), filter).Decode(&user)
+	return user.SupportGroup, err
+}
