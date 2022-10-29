@@ -37,7 +37,7 @@ func findLastDate(device string, isVanilla bool) (time.Time, error) {
 	defer resp.Body.Close()
 
 	if (resp.StatusCode != 200) || (err != nil) {
-		fmt.Println("Status:", resp.StatusCode)
+		Log.Error("Status: %d", resp.StatusCode)
 		return time.Time{}, err
 	}
 	var ota OTA
@@ -116,4 +116,46 @@ func findRepoUrls(url string, endDate time.Time) error {
 	findRepoUrls(findNextPage(nextLink), endDate)
 
 	return nil
+}
+
+func findDeviceRepo(device string) (string, error) {
+	Log.Info("Finding repo for device %s", device)
+	apiUrl := fmt.Sprintf("https://api.github.com/search/repositories?q=%s+user:%s+in:name+fork:true", device, DeviceOrg)
+	req, err := http.NewRequest("GET", apiUrl, nil)
+	if err != nil {
+		Log.Error("Error while creating request: %s", err)
+		return "", err
+	}
+	req.Header.Set("Authorization", "token "+Config.GithubToken)
+	req.Header.Set("Accept", "application/vnd.github.v3+json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		Log.Error("Error while sending request: %s", err)
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	if (resp.StatusCode != 200) || (err != nil) {
+		Log.Info("Status: %d", resp.StatusCode)
+		return "", err
+	}
+
+	var result map[string]interface{}
+	err = json.NewDecoder(resp.Body).Decode(&result)
+	if err != nil {
+		Log.Error("Error while decoding json: %s", err)
+		return "", err
+	}
+
+	for _, deviceRepo := range result["items"].([]interface{}) {
+		repoUrl := deviceRepo.(map[string]interface{})["name"].(string)
+		splitRepoUrl := strings.Split(repoUrl, "_")
+		if slices.Contains(splitRepoUrl, "device") && slices.Contains(splitRepoUrl, device) {
+			return repoUrl, nil
+		}
+	}
+
+	return "", fmt.Errorf("no device repo found")
 }
