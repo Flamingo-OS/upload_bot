@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"math/big"
 	"os"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/Flamingo-OS/upload-bot/core"
 	"github.com/Flamingo-OS/upload-bot/database"
@@ -13,6 +15,8 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 )
+
+const bannerLink = "https://sourceforge.net/projects/kosp/files/banners/banner-01.png/download"
 
 // validates the release is indeed a flamingo OS file
 // also creates and pushes OTA file
@@ -27,6 +31,63 @@ func validateRelease(fileNames []string) (core.DeviceInfo, error) {
 		return deviceInfo, err
 	}
 	return deviceInfo, err
+}
+
+func CreateReleaseText(deviceInfo core.DeviceInfo, urls []string, maintainers []database.Maintainers, deviceSupport string) (string, error) {
+	formatTime := time.Now().Format("2006-01-02")
+	buildTime, _ := time.Parse("20060102", deviceInfo.BuildDate)
+	av, err := strconv.ParseFloat(deviceInfo.Version, 64)
+	if err != nil {
+		core.Log.Error("Error while parsing android version: %s", err)
+		return "", err
+	}
+	androidVersion := int(av) + 11
+	changeLogUrl := fmt.Sprintf("https://raw.githubusercontent.com/Flamingo-OS/OTA/%s/%s/%s/%s/changelog_%s", deviceInfo.Flavour, deviceInfo.DeviceName, deviceInfo.BuildType, deviceInfo.Version, strings.ReplaceAll(formatTime, "-", "_"))
+	msgTxt := fmt.Sprintf(`FlamingoOS %s | Android %d | OFFICIAL | %s
+	
+		Maintainers: `, deviceInfo.Version, androidVersion, deviceInfo.Flavour)
+
+	for _, maintainer := range maintainers {
+		msgTxt += fmt.Sprintf(` [%s](tg://user?id=%d) `, maintainer.MaintainerName, maintainer.UserId)
+	}
+
+	msgTxt += fmt.Sprintf(`
+		
+		Device: %s
+		Date: %s
+
+		Downloads`, deviceInfo.DeviceName, buildTime.Format("02-01-2006"))
+
+	for _, url := range urls {
+		if strings.Contains(url, "-full") {
+			msgTxt += fmt.Sprintf(`
+		-	[Full](%s)	`, url)
+		} else if strings.Contains(url, "-incremental") {
+			msgTxt += fmt.Sprintf(`
+		-	[Incremental](%s)	`, url)
+		} else if strings.Contains(url, "-fastboot") {
+			msgTxt += fmt.Sprintf(`
+		-	[Fastboot](%s)	`, url)
+		} else if strings.Contains(url, "-boot") {
+			msgTxt += fmt.Sprintf(`
+		-	[Boot](%s)	`, url)
+		}
+	}
+	msgTxt += fmt.Sprintf(`
+
+		Changes:	[Changelog](%s)
+	
+		Support Groups
+		-	[Common](https://t.me/flamingo_common)
+		-	[Updates](https://t.me/flamingo_updates)
+	`, changeLogUrl)
+
+	if deviceSupport != "" {
+		msgTxt += fmt.Sprintf(`
+		-	[Device Support](%s)`, deviceSupport)
+	}
+
+	return msgTxt, nil
 }
 
 func releaseHandler(b *gotgbot.Bot, ctx *ext.Context) error {
@@ -129,6 +190,25 @@ func releaseHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 	msgTxt = strings.Trim(msgTxt, ", `")
 	core.Log.Info(msgTxt)
-	b.SendMessage(chat.Id, msgTxt, &gotgbot.SendMessageOpts{ParseMode: "markdown"})
+	supportGroup, e := database.GetSupportGroup(ctx.EffectiveUser.Id)
+	if e != nil {
+		core.Log.Errorln("Couldn't fetch support group", e)
+	}
+
+	maintainers, e := database.GetMaintainer(deviceInfo.DeviceName)
+
+	if e != nil {
+		core.Log.Errorln("Couldn't fetch maintainers", e)
+	}
+
+	msgTxt, e = CreateReleaseText(deviceInfo, uploadUrls, maintainers, supportGroup)
+	if e != nil {
+		core.Log.Errorln("Couldn't create release text", e)
+		b.SendMessage(chat.Id, "Something went wrong while creating release", &gotgbot.SendMessageOpts{})
+	}
+	_, e = b.SendPhoto(ctx.EffectiveChat.Id, bannerLink, &gotgbot.SendPhotoOpts{
+		Caption:   msgTxt,
+		ParseMode: "Markdown",
+	})
 	return e
 }
