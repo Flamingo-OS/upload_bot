@@ -9,7 +9,8 @@ import (
 	"strings"
 )
 
-func UnzipFile(zipFilePath string) (string, error) {
+func UnzipFile(zipFilePath string, fileName string) (string, error) {
+	dst := DumpPath + fileName
 	archive, err := zip.OpenReader(zipFilePath)
 	if err != nil {
 		panic(err)
@@ -17,10 +18,10 @@ func UnzipFile(zipFilePath string) (string, error) {
 	defer archive.Close()
 
 	for _, f := range archive.File {
-		filePath := filepath.Join(DumpPath, f.Name)
+		filePath := filepath.Join(dst, f.Name)
 		Log.Info("Extracting %s", filePath)
 
-		if !strings.HasPrefix(filePath, filepath.Clean(DumpPath)+string(os.PathSeparator)) {
+		if !strings.HasPrefix(filePath, filepath.Clean(dst)+string(os.PathSeparator)) {
 			Log.Error("illegal file path: %s", filePath)
 			return "", fmt.Errorf("invalid file path")
 		}
