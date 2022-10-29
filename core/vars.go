@@ -20,5 +20,5 @@ const DumpPath string = "Dumpster/"
 const DeviceOrg = "FlamingoOS-Devices"
 const MainOrg = "Flamingo-OS"
 const Branch = "A13"
-const BaseUrl = "https://downloads.e11z.net/flamingo/"
+const BaseUrl = "https://downloads.e11z.net/d/flamingo/"
 const UpdateChannelId = -1001655954786
