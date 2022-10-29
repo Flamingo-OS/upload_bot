@@ -252,7 +252,7 @@ func findDependencies(device string) error {
 		depRemote := DeviceOrg
 		if dependency["remote"] != nil {
 			if dependency["remote"].(string) == "flamingo" {
-				depRemote = "flamingo-OS"
+				depRemote = MainOrg
 			} else {
 				continue // skip outside remotes
 			}
@@ -298,7 +298,7 @@ func CreateChangelog(deviceName string, isVanilla bool) error {
 		return err
 	}
 	repos = []string{}
-	findRepoUrls("https://api.github.com/orgs/Flamingo-OS/repos?type=all", date)
+	findRepoUrls(fmt.Sprintf("https://api.github.com/orgs/%s/repos?type=all", MainOrg), date)
 	deviceRepo, err := findDeviceRepo(deviceName)
 	if err != nil {
 		Log.Error("Error while finding device repo: %s", err)
