@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"golang.org/x/exp/slices"
@@ -254,5 +256,61 @@ func findDependencies(device string) error {
 		repos = append(repos, dep)
 	}
 
+	return nil
+}
+
+func createChangelogs(ch *string, repo string, date time.Time, mut *sync.Mutex, wg *sync.WaitGroup) {
+	defer wg.Done()
+	var changelog string
+	e := findCommits(repo, &changelog, date)
+	if e != nil {
+		Log.Error("Error while finding commits: %s", e)
+	}
+	if changelog != "" {
+		a := strings.Split(repo, "/")
+		mut.Lock()
+		*ch += "## " + a[len(a)-2] + " ##" + "\n"
+		*ch += changelog
+		*ch += "\n"
+		mut.Unlock()
+	}
+}
+
+func CreateChangelog(deviceName string, isVanilla bool) error {
+	Log.Info("Creating changelog")
+	var wg sync.WaitGroup
+	var mut sync.Mutex
+	date, err := findLastDate(deviceName, isVanilla)
+	if err != nil {
+		Log.Error("Error while finding last date: %s", err)
+		return err
+	}
+	repos = []string{}
+	findRepoUrls("https://api.github.com/orgs/Flamingo-OS/repos?type=all", date)
+	deviceRepo, err := findDeviceRepo(deviceName)
+	if err != nil {
+		Log.Error("Error while finding device repo: %s", err)
+		return err
+	}
+	repos = append(repos, fmt.Sprintf("https://api.github.com/repos/%s/%s/commits", DeviceOrg, deviceRepo))
+	findDependencies(deviceRepo)
+
+	completeChangelog := ""
+	for _, repo := range repos {
+		go createChangelogs(&completeChangelog, repo, date, &mut, &wg)
+		wg.Add(1)
+	}
+	wg.Wait()
+	f, err := os.Create(fmt.Sprintf("%s/changelog.txt", DumpPath))
+	if err != nil {
+		Log.Error("Error while creating file: %s", err)
+		return err
+	}
+	defer f.Close()
+	_, err = f.WriteString(completeChangelog)
+	if err != nil {
+		Log.Error("Error while writing to file: %s", err)
+		return err
+	}
 	return nil
 }
