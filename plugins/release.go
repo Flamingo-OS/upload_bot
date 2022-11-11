@@ -42,7 +42,7 @@ func CreateReleaseText(deviceInfo core.DeviceInfo, urls []string, maintainers []
 		return "", err
 	}
 	androidVersion := int(av) + 11
-	changeLogUrl := fmt.Sprintf("https://raw.githubusercontent.com/Flamingo-OS/OTA/%s/%s/%s/%s/changelog_%s", deviceInfo.Flavour, deviceInfo.DeviceName, deviceInfo.BuildType, deviceInfo.Version, strings.ReplaceAll(formatTime, "-", "_"))
+	changeLogUrl := fmt.Sprintf("https://raw.githubusercontent.com/FlamingoOS-Devices/OTA/main/%s/%s/changelog_%s", deviceInfo.DeviceName, deviceInfo.Flavour, strings.ReplaceAll(formatTime, "-", "_"))
 	msgTxt := fmt.Sprintf(`FlamingoOS %s | Android %d | OFFICIAL | %s
 	
 		Maintainers: `, deviceInfo.Version, androidVersion, deviceInfo.Flavour)
@@ -178,7 +178,7 @@ func releaseHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 			return err
 		}
 		fileName := strings.Split(f, "/")[len(strings.Split(f, "/"))-1]
-		uploadUrl := core.BaseUrl + "/" + uploadFolder + "/" + fileName
+		uploadUrl := core.BaseUrl + uploadFolder + "/" + fileName
 		uploadUrls = append(uploadUrls, uploadUrl)
 		msgTxt = fmt.Sprintf("Uploaded file %s\nYou can cancel using `/cancel %d`", f, taskId.Uint64())
 		m.EditText(b, msgTxt, &gotgbot.EditMessageTextOpts{ParseMode: "markdown"})
