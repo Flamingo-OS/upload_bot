@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -12,9 +13,10 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-// stores all repos from where we can get the commits
-// includes repos from flamingoOS org and for resp devices in our org
-var repos []string
+// stores all repos from where we can get the commits and the corresponding changelogs
+// includes repos from flamingoOS org.
+var repos map[string]string
+var deviceRepos map[string]string
 
 // find the last update date
 func findLastDate(device string, isVanilla bool) (time.Time, error) {
@@ -116,7 +118,7 @@ func findRepoUrls(url string, endDate time.Time) error {
 			continue
 		}
 		commitsUrl := strings.Replace(repo["commits_url"].(string), "{/sha}", "", 1)
-		repos = append(repos, commitsUrl)
+		repos[commitsUrl] = ""
 	}
 
 	findRepoUrls(findNextPage(nextLink), endDate)
@@ -262,7 +264,7 @@ func findDependencies(device string) error {
 		findDependencies(depName)
 
 		dep := fmt.Sprintf("https://api.github.com/repos/%s/%s/commits", depRemote, depName)
-		repos = append(repos, dep)
+		deviceRepos[dep] = ""
 	}
 
 	return nil
@@ -271,20 +273,36 @@ func findDependencies(device string) error {
 // create changelog for a single repo
 // it will all be writen to a single changelog string
 // Fully multi threaded and async
-func createChangelogs(ch *string, repo string, date time.Time, mut *sync.Mutex, wg *sync.WaitGroup) {
+func createChangelogs(r map[string]string, repo string, date time.Time, mut *sync.Mutex, wg *sync.WaitGroup) {
 	defer wg.Done()
 	var changelog string
 	e := findCommits(repo, &changelog, date)
 	if e != nil {
 		Log.Error("Error while finding commits: ", e)
+		return
 	}
 	if changelog != "" {
-		a := strings.Split(repo, "/")
 		mut.Lock()
-		*ch += "## " + a[len(a)-2] + " ##" + "\n"
-		*ch += changelog
-		*ch += "\n"
+		r[repo] = changelog
 		mut.Unlock()
+	}
+}
+
+func genChangelog(r map[string]string, ch *string) {
+	keys := make([]string, 0, len(r))
+
+	for k := range r {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	for _, repoUrl := range keys {
+		if r[repoUrl] != "" {
+			splitUrl := strings.Split(repoUrl, "/")
+			fmt.Println("Adding changelog for " + splitUrl[len(splitUrl)-2])
+			*ch += fmt.Sprintf("# %s #\n", splitUrl[len(splitUrl)-2])
+			*ch += r[repoUrl]
+			*ch += "\n"
+		}
 	}
 }
 
@@ -298,21 +316,28 @@ func CreateChangelog(deviceName string, isVanilla bool) (string, error) {
 		Log.Error("Error while finding last date: ", err)
 		return "", err
 	}
-	repos = []string{}
+	repos = map[string]string{}
+	deviceRepos = map[string]string{}
 	findRepoUrls(fmt.Sprintf("https://api.github.com/orgs/%s/repos?type=all", MainOrg), date)
 	deviceRepo, err := findDeviceRepo(deviceName)
 	if err != nil {
-		Log.Error("Error while finding device repo: ", err)
 		return "", err
 	}
-	repos = append(repos, fmt.Sprintf("https://api.github.com/repos/%s/%s/commits", DeviceOrg, deviceRepo))
+	deviceRepos[fmt.Sprintf("https://api.github.com/repos/%s/%s/commits", DeviceOrg, deviceRepo)] = ""
 	findDependencies(deviceRepo)
 
-	completeChangelog := ""
-	for _, repo := range repos {
-		go createChangelogs(&completeChangelog, repo, date, &mut, &wg)
+	for repoUrl, _ := range repos {
+		go createChangelogs(repos, repoUrl, date, &mut, &wg)
+		wg.Add(1)
+	}
+	for repoUrl, _ := range deviceRepos {
+		go createChangelogs(deviceRepos, repoUrl, date, &mut, &wg)
 		wg.Add(1)
 	}
 	wg.Wait()
-	return completeChangelog, nil
+	var changelogs string = "### Source side changes ###\n\n"
+	genChangelog(repos, &changelogs)
+	changelogs += "\n### Device side changes ###\n\n"
+	genChangelog(deviceRepos, &changelogs)
+	return changelogs, nil
 }
