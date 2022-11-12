@@ -69,7 +69,7 @@ func findNextPage(nextPosUrl string) string {
 // find all repos from Flamingo-OS org
 func findRepoUrls(url string, endDate time.Time) error {
 	Log.Info("Finding repo urls for ", url)
-	var blacklist = []string{"vendor_prebuilts"}
+	var blacklist = []string{"vendor_prebuilts", "upload_bot"}
 	if url == "" {
 		Log.Warn("Empty url")
 		return nil
