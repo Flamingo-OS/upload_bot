@@ -202,12 +202,14 @@ func findCommits(url string, changelog *string, endDate time.Time) error {
 	for _, commit := range commits {
 		commitDate, _ := time.Parse(time.RFC3339, commit["commit"].(map[string]interface{})["committer"].(map[string]interface{})["date"].(string))
 		if endDate.UTC().After(commitDate.UTC()) {
-			break
+			return nil
 		}
 		commitMessage := strings.Split(commit["commit"].(map[string]interface{})["message"].(string), "\n")[0]
 		*changelog += commitMessage + "\n"
 	}
 
+	nextLink := resp.Header.Get("Link")
+	findCommits(findNextPage(nextLink), changelog, endDate)
 	return nil
 }
 
