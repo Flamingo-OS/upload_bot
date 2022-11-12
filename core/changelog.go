@@ -200,7 +200,7 @@ func findCommits(url string, changelog *string, endDate time.Time) error {
 	}
 
 	for _, commit := range commits {
-		commitDate, _ := time.Parse(time.RFC3339, commit["commit"].(map[string]interface{})["author"].(map[string]interface{})["date"].(string))
+		commitDate, _ := time.Parse(time.RFC3339, commit["commit"].(map[string]interface{})["committer"].(map[string]interface{})["date"].(string))
 		if endDate.UTC().After(commitDate.UTC()) {
 			break
 		}
