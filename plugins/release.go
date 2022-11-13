@@ -172,6 +172,12 @@ func releaseHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		return err
 	}
 
+	if core.CancelTasks.GetCancelStatus(taskId.Uint64()) {
+		core.Log.Infoln("Release cancelled by user")
+		b.SendMessage(chat.Id, "Release cancelled by user", &gotgbot.SendMessageOpts{})
+		return nil
+	}
+
 	// upload the files
 	msgTxt = fmt.Sprintf("Uploading files...\nYou can cancel using `/cancel %d`", taskId.Uint64())
 	m.EditText(b, msgTxt, &gotgbot.EditMessageTextOpts{ParseMode: "markdown"})
@@ -188,6 +194,13 @@ func releaseHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		uploadUrl := core.BaseUrl + uploadFolder + "/" + fileName
 		uploadUrls = append(uploadUrls, uploadUrl)
 		msgTxt = fmt.Sprintf("Uploaded file %s\nYou can cancel using `/cancel %d`", f, taskId.Uint64())
+
+		if core.CancelTasks.GetCancelStatus(taskId.Uint64()) {
+			core.Log.Infoln("Release cancelled by user")
+			b.SendMessage(chat.Id, "Release cancelled by user", &gotgbot.SendMessageOpts{})
+			return nil
+		}
+
 		m.EditText(b, msgTxt, &gotgbot.EditMessageTextOpts{ParseMode: "markdown"})
 	}
 
@@ -207,6 +220,12 @@ func releaseHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	supportGroup, e := database.GetSupportGroup(maintainers[0].UserId)
 	if e != nil {
 		core.Log.Errorln("Couldn't fetch support group", e)
+	}
+
+	if core.CancelTasks.GetCancelStatus(taskId.Uint64()) {
+		core.Log.Infoln("Release cancelled by user")
+		b.SendMessage(chat.Id, "Release cancelled by user", &gotgbot.SendMessageOpts{})
+		return nil
 	}
 
 	msgTxt, e = CreateReleaseText(deviceInfo, uploadUrls, maintainers, supportGroup)
