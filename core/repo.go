@@ -12,13 +12,11 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
 )
 
-func CreateOTACommit(deviceInfo DeviceInfo, fullOtaFile string, incrementalOtaFile string, dumpPath string) error {
-	Log.Info("Creating OTA commits")
+func pushOTARepo(deviceInfo DeviceInfo, clonePath string, otaPath string, otaData string, changelogPath string, changelogData string, incrementalOtaPath string, incrementalOtaData string) error {
 	branch := "main"
-	clonePath := dumpPath + "OTA/"
-	otaPath := deviceInfo.DeviceName + "/" + deviceInfo.Flavour + "/" + "ota.json"
-	incrementalOtaPath := deviceInfo.DeviceName + "/" + deviceInfo.Flavour + "/" + "incremental_ota.json"
-	changelogPath := ""
+	formatTime := time.Now().Format("2006-01-02")
+	Mut.Lock()
+	defer Mut.Unlock()
 
 	r, err := git.PlainClone(clonePath, false, &git.CloneOptions{
 		Auth: &http.BasicAuth{
@@ -35,48 +33,30 @@ func CreateOTACommit(deviceInfo DeviceInfo, fullOtaFile string, incrementalOtaFi
 		return err
 	}
 
-	formatTime := time.Now().Format("2006-01-02")
-
-	changeLog, _ := CreateChangelog(deviceInfo.DeviceName, false)
-	changelogPath = deviceInfo.DeviceName + "/" + deviceInfo.Flavour + "/" + "changelog_" + strings.ReplaceAll(formatTime, "-", "_")
-	writeToFile(clonePath+changelogPath, changeLog)
-	ota, _ := CreateOtaJson(fullOtaFile, deviceInfo, dumpPath)
-	jsonData, err := json.MarshalIndent(ota, "", "  ")
-	if err != nil {
-		Log.Error("Error while marshalling json: %s", err)
-		return err
-	}
-	writeToFile(clonePath+otaPath, string(jsonData))
-	if incrementalOtaFile != "" {
-		ota, _ := CreateOtaJson(incrementalOtaFile, deviceInfo, dumpPath)
-		jsonData, err := json.MarshalIndent(ota, "", "  ")
-		if err != nil {
-			Log.Error("Error while marshalling json: %s", err)
-			return err
-		}
-
-		writeToFile(clonePath+incrementalOtaPath, string(jsonData))
-	}
-
 	w, err := r.Worktree()
 	if err != nil {
 		Log.Error("Error while getting worktree: %s", err)
 		return err
 	}
 
-	Mut.Lock()
-	defer Mut.Unlock()
-
+	Log.Infof("Pulling latest changes for device: %s", deviceInfo.DeviceName)
 	w.Pull(&git.PullOptions{
 		RemoteName:    "origin",
 		SingleBranch:  true,
 		ReferenceName: plumbing.ReferenceName(fmt.Sprintf("refs/heads/%s", branch)),
 	})
+	Log.Infof("Staging new changes for : %s", deviceInfo.DeviceName)
+	writeToFile(clonePath+changelogPath, changelogData)
 	w.Add(changelogPath)
+	writeToFile(clonePath+otaPath, otaData)
 	w.Add(otaPath)
-	w.Add(incrementalOtaPath)
+	if incrementalOtaData != "" {
+		writeToFile(clonePath+incrementalOtaPath, incrementalOtaData)
+		w.Add(incrementalOtaPath)
+	}
 
 	commitMsg := fmt.Sprintf("%s: update %s", deviceInfo.DeviceName, formatTime)
+	Log.Infof("Pushing OTA for : %s", deviceInfo.DeviceName)
 	_, err = w.Commit(commitMsg, &git.CommitOptions{
 		Author: &object.Signature{
 			Name:  "github-actions[bot]",
@@ -95,4 +75,36 @@ func CreateOTACommit(deviceInfo DeviceInfo, fullOtaFile string, incrementalOtaFi
 			Username: "npv12",
 			Password: Config.GithubToken,
 		}})
+}
+
+func CreateOTACommit(deviceInfo DeviceInfo, fullOtaFile string, incrementalOtaFile string, dumpPath string) error {
+	Log.Info("Creating OTA commits")
+
+	clonePath := dumpPath + "OTA/"
+	otaPath := deviceInfo.DeviceName + "/" + deviceInfo.Flavour + "/" + "ota.json"
+	incrementalOtaPath := deviceInfo.DeviceName + "/" + deviceInfo.Flavour + "/" + "incremental_ota.json"
+	changelogPath := ""
+
+	formatTime := time.Now().Format("2006-01-02")
+
+	changeLog, _ := CreateChangelog(deviceInfo.DeviceName, false)
+	changelogPath = deviceInfo.DeviceName + "/" + deviceInfo.Flavour + "/" + "changelog_" + strings.ReplaceAll(formatTime, "-", "_")
+	ota, _ := CreateOtaJson(fullOtaFile, deviceInfo, dumpPath)
+	otaJson, err := json.MarshalIndent(ota, "", "  ")
+	if err != nil {
+		Log.Error("Error while marshalling json: %s", err)
+		return err
+	}
+	otaData := string(otaJson)
+	incrementalOtaData := ""
+	if incrementalOtaFile != "" {
+		ota, _ := CreateOtaJson(incrementalOtaFile, deviceInfo, dumpPath)
+		incrementalOtaJson, err := json.MarshalIndent(ota, "", "  ")
+		if err != nil {
+			Log.Error("Error while marshalling json: %s", err)
+			return err
+		}
+		incrementalOtaData = string(incrementalOtaJson)
+	}
+	return pushOTARepo(deviceInfo, clonePath, otaPath, otaData, changelogPath, changeLog, incrementalOtaPath, incrementalOtaData)
 }
