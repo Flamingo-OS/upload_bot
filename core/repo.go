@@ -67,7 +67,11 @@ func CreateOTACommit(deviceInfo DeviceInfo, fullOtaFile string, incrementalOtaFi
 	Mut.Lock()
 	defer Mut.Unlock()
 
-	w.Pull(&git.PullOptions{})
+	w.Pull(&git.PullOptions{
+		RemoteName:    "origin",
+		SingleBranch:  true,
+		ReferenceName: plumbing.ReferenceName(fmt.Sprintf("refs/heads/%s", branch)),
+	})
 	w.Add(changelogPath)
 	w.Add(otaPath)
 	w.Add(incrementalOtaPath)
