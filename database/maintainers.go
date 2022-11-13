@@ -53,14 +53,14 @@ func AddMaintainer(userId int64, maintainerName string, devices []string) error 
 
 func IsMaintainer(userId int64) bool {
 	core.Log.Infoln("Checking if user is a maintainer...")
-	filter := bson.M{"user_id": userId}
+	filter := bson.M{"user_id": userId, "is_maintainer": true}
 	var result bson.M
 	err := core.Collection.FindOne(context.Background(), filter).Decode(&result)
 	if err != nil {
 		return false
 	}
 	core.Log.Infoln("The user's maintainer status is", result["is_maintainer"])
-	return result["is_maintainer"].(bool)
+	return true
 }
 
 func RemoveMaintainer(userId int64) error {
@@ -73,7 +73,7 @@ func RemoveMaintainer(userId int64) error {
 
 func GetMaintainer(device string) ([]Maintainers, error) {
 	core.Log.Info("Fetching maintainers for device: ", device)
-	filter := bson.M{"devices": device}
+	filter := bson.M{"devices": device, "is_maintainer": true}
 	cur, err := core.Collection.Find(context.Background(), filter)
 	if err != nil {
 		return nil, err

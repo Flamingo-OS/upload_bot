@@ -25,12 +25,12 @@ func DemoteAdmin(userId int64) error {
 
 func IsAdmin(userId int64) bool {
 	core.Log.Infoln("Checking if user is an admin...")
-	filter := bson.M{"user_id": userId}
+	filter := bson.M{"user_id": userId, "is_admin": true}
 	var result bson.M
 	err := core.Collection.FindOne(context.Background(), filter).Decode(&result)
 	if err != nil {
 		return false
 	}
 	core.Log.Infoln("The user's admin status is", result["is_admin"])
-	return result["is_admin"].(bool)
+	return true
 }
