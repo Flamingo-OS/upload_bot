@@ -309,7 +309,7 @@ func genChangelog(r map[string]string, ch *string) {
 func CreateChangelog(deviceName string, isVanilla bool) (string, error) {
 	Log.Info("Creating changelog")
 	var wg sync.WaitGroup
-	var mut sync.Mutex
+
 	date, err := findLastDate(deviceName, isVanilla)
 	if err != nil {
 		Log.Error("Error while finding last date: ", err)
@@ -326,11 +326,11 @@ func CreateChangelog(deviceName string, isVanilla bool) (string, error) {
 	findDependencies(deviceRepo)
 
 	for repoUrl := range repos {
-		go createChangelogs(repos, repoUrl, date, &mut, &wg)
+		go createChangelogs(repos, repoUrl, date, &Mut, &wg)
 		wg.Add(1)
 	}
 	for repoUrl := range deviceRepos {
-		go createChangelogs(deviceRepos, repoUrl, date, &mut, &wg)
+		go createChangelogs(deviceRepos, repoUrl, date, &Mut, &wg)
 		wg.Add(1)
 	}
 	wg.Wait()

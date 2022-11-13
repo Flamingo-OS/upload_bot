@@ -1,23 +1,19 @@
 package core
 
-import "sync"
-
 type CancelCmds struct {
 	tasks map[uint64]bool
 }
 
 func (cmd *CancelCmds) Insert(id uint64) {
-	var m sync.Mutex
-	m.Lock()
+	Mut.Lock()
 	cmd.tasks[id] = false
-	m.Unlock()
+	Mut.Unlock()
 }
 
 func (cmd *CancelCmds) Cancel(id uint64) {
-	var m sync.Mutex
-	m.Lock()
+	Mut.Lock()
 	cmd.tasks[id] = true
-	m.Unlock()
+	Mut.Lock()
 }
 
 func (cmd *CancelCmds) GetCancelStatus(id uint64) bool {
@@ -25,10 +21,9 @@ func (cmd *CancelCmds) GetCancelStatus(id uint64) bool {
 }
 
 func (cmd *CancelCmds) Remove(id uint64) {
-	var m sync.Mutex
-	m.Lock()
+	Mut.Lock()
 	delete(cmd.tasks, id)
-	m.Unlock()
+	Mut.Lock()
 }
 
 func NewCancelCmd() *CancelCmds {

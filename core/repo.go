@@ -68,6 +68,8 @@ func CreateOTACommit(deviceInfo DeviceInfo, fullOtaFile string, incrementalOtaFi
 	w.Add(otaPath)
 	w.Add(incrementalOtaPath)
 
+	Mut.Lock()
+	defer Mut.Unlock()
 	commitMsg := fmt.Sprintf("%s: update %s", deviceInfo.DeviceName, formatTime)
 	w.Pull(&git.PullOptions{})
 	_, err = w.Commit(commitMsg, &git.CommitOptions{
