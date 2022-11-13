@@ -13,7 +13,7 @@ func (cmd *CancelCmds) Insert(id uint64) {
 func (cmd *CancelCmds) Cancel(id uint64) {
 	Mut.Lock()
 	cmd.tasks[id] = true
-	Mut.Lock()
+	Mut.Unlock()
 }
 
 func (cmd *CancelCmds) GetCancelStatus(id uint64) bool {
@@ -23,7 +23,7 @@ func (cmd *CancelCmds) GetCancelStatus(id uint64) bool {
 func (cmd *CancelCmds) Remove(id uint64) {
 	Mut.Lock()
 	delete(cmd.tasks, id)
-	Mut.Lock()
+	Mut.Unlock()
 }
 
 func NewCancelCmd() *CancelCmds {

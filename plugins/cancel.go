@@ -27,6 +27,6 @@ func cancelHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 
 	core.CancelTasks.Cancel(taskId)
 
-	_, e := b.SendMessage(chat.Id, "Queueing request to cancel the task", &gotgbot.SendMessageOpts{})
+	_, e := b.SendMessage(chat.Id, "Queued request to cancel the task", &gotgbot.SendMessageOpts{})
 	return e
 }
