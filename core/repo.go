@@ -78,7 +78,8 @@ func CreateOTACommit(deviceInfo DeviceInfo, fullOtaFile string, incrementalOtaFi
 	})
 
 	if err != nil {
-		fmt.Printf("Error: %v", err)
+		Log.Errorf("Error: %v", err)
+		return err
 	}
 
 	err = r.Push(&git.PushOptions{
@@ -88,7 +89,8 @@ func CreateOTACommit(deviceInfo DeviceInfo, fullOtaFile string, incrementalOtaFi
 		}})
 
 	if err != nil {
-		fmt.Printf("Error: %v", err)
+		Log.Errorf("Error: %v", err)
+		return err
 	}
 
 	return nil

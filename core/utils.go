@@ -20,14 +20,14 @@ func UnzipFile(zipFilePath string, fileName string, dumpPath string) (string, er
 
 	for _, f := range archive.File {
 		filePath := filepath.Join(dst, f.Name)
-		Log.Info("Extracting", filePath)
+		Log.Info("Extracting to ", filePath)
 
 		if !strings.HasPrefix(filePath, filepath.Clean(dst)+string(os.PathSeparator)) {
 			Log.Error("illegal file path:", filePath)
 			return "", fmt.Errorf("invalid file path")
 		}
 		if f.FileInfo().IsDir() {
-			fmt.Println("creating directory...")
+			Log.Infof("creating directory...")
 			os.MkdirAll(filePath, os.ModePerm)
 			continue
 		}

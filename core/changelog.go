@@ -298,7 +298,6 @@ func genChangelog(r map[string]string, ch *string) {
 	for _, repoUrl := range keys {
 		if r[repoUrl] != "" {
 			splitUrl := strings.Split(repoUrl, "/")
-			fmt.Println("Adding changelog for " + splitUrl[len(splitUrl)-2])
 			*ch += fmt.Sprintf("# %s #\n", splitUrl[len(splitUrl)-2])
 			*ch += r[repoUrl]
 			*ch += "\n"
