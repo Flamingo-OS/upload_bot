@@ -326,11 +326,11 @@ func CreateChangelog(deviceName string, isVanilla bool) (string, error) {
 	deviceRepos[fmt.Sprintf("https://api.github.com/repos/%s/%s/commits", DeviceOrg, deviceRepo)] = ""
 	findDependencies(deviceRepo)
 
-	for repoUrl, _ := range repos {
+	for repoUrl := range repos {
 		go createChangelogs(repos, repoUrl, date, &mut, &wg)
 		wg.Add(1)
 	}
-	for repoUrl, _ := range deviceRepos {
+	for repoUrl := range deviceRepos {
 		go createChangelogs(deviceRepos, repoUrl, date, &mut, &wg)
 		wg.Add(1)
 	}

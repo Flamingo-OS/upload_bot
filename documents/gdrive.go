@@ -78,7 +78,7 @@ func getFileFromId(d *drive.Service, fileId string) (*drive.File, error) {
 }
 
 // DownloadFile downloads the content of a given file object
-func downloadFile(d *drive.Service, t http.RoundTripper, f *drive.File) (string, error) {
+func downloadFile(d *drive.Service, t http.RoundTripper, f *drive.File, dumpPath string) (string, error) {
 	core.Log.Info("Initialising download")
 	downloadUrl := f.DownloadUrl
 	title := f.Title
@@ -99,7 +99,7 @@ func downloadFile(d *drive.Service, t http.RoundTripper, f *drive.File) (string,
 		return "", err
 	}
 	defer resp.Body.Close()
-	return downloadSaver(resp, title)
+	return downloadSaver(resp, title, dumpPath)
 }
 
 func parseFileId(url string) string {
@@ -107,12 +107,12 @@ func parseFileId(url string) string {
 	return re.FindString(url)
 }
 
-func gDriveDownloader(url string) (string, error) {
+func gDriveDownloader(url string, dumpPath string) (string, error) {
 	fileId := parseFileId(url)
 	f, err := getFileFromId(core.DriveService, fileId)
 	if err != nil {
 		core.Log.Errorf("An error occurred: %v\n", err)
 		return "", err
 	}
-	return downloadFile(core.DriveService, core.DriveClient.Transport, f)
+	return downloadFile(core.DriveService, core.DriveClient.Transport, f, dumpPath)
 }

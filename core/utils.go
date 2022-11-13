@@ -10,8 +10,8 @@ import (
 	"strings"
 )
 
-func UnzipFile(zipFilePath string, fileName string) (string, error) {
-	dst := DumpPath + fileName
+func UnzipFile(zipFilePath string, fileName string, dumpPath string) (string, error) {
+	dst := dumpPath + fileName
 	archive, err := zip.OpenReader(zipFilePath)
 	if err != nil {
 		panic(err)

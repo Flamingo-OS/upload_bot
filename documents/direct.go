@@ -10,9 +10,9 @@ import (
 	"github.com/Flamingo-OS/upload-bot/core"
 )
 
-func downloadSaver(resp *http.Response, fileName string) (string, error) {
+func downloadSaver(resp *http.Response, fileName string, dumpPath string) (string, error) {
 	core.Log.Info("Downloading the file")
-	filePath := core.DumpPath + fileName
+	filePath := dumpPath + fileName
 	fileHandle, err := os.OpenFile(filePath, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0644)
 	if err != nil {
 		core.Log.Errorf("An error occurred: %v\n", err)
@@ -28,7 +28,7 @@ func downloadSaver(resp *http.Response, fileName string) (string, error) {
 	return filePath, nil
 }
 
-func DirectDownloader(url string) (string, error) {
+func DirectDownloader(url string, dumpPath string) (string, error) {
 
 	var fileName string = ""
 	for _, item := range strings.Split(url, "/") {
@@ -49,5 +49,5 @@ func DirectDownloader(url string) (string, error) {
 	}
 	defer resp.Body.Close()
 
-	return downloadSaver(resp, fileName)
+	return downloadSaver(resp, fileName, dumpPath)
 }

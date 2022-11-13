@@ -12,10 +12,10 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
 )
 
-func CreateOTACommit(deviceInfo DeviceInfo, fullOtaFile string, incrementalOtaFile string) error {
+func CreateOTACommit(deviceInfo DeviceInfo, fullOtaFile string, incrementalOtaFile string, dumpPath string) error {
 	Log.Info("Creating OTA commits")
 	branch := "main"
-	clonePath := DumpPath + "OTA/"
+	clonePath := dumpPath + "OTA/"
 	otaPath := deviceInfo.DeviceName + "/" + deviceInfo.Flavour + "/" + "ota.json"
 	incrementalOtaPath := deviceInfo.DeviceName + "/" + deviceInfo.Flavour + "/" + "incremental_ota.json"
 	changelogPath := ""
@@ -40,7 +40,7 @@ func CreateOTACommit(deviceInfo DeviceInfo, fullOtaFile string, incrementalOtaFi
 	changeLog, _ := CreateChangelog(deviceInfo.DeviceName, false)
 	changelogPath = deviceInfo.DeviceName + "/" + deviceInfo.Flavour + "/" + "changelog_" + strings.ReplaceAll(formatTime, "-", "_")
 	writeToFile(clonePath+changelogPath, changeLog)
-	ota, _ := CreateOtaJson(fullOtaFile, deviceInfo)
+	ota, _ := CreateOtaJson(fullOtaFile, deviceInfo, dumpPath)
 	jsonData, err := json.MarshalIndent(ota, "", "  ")
 	if err != nil {
 		Log.Error("Error while marshalling json: %s", err)
@@ -48,7 +48,7 @@ func CreateOTACommit(deviceInfo DeviceInfo, fullOtaFile string, incrementalOtaFi
 	}
 	writeToFile(clonePath+otaPath, string(jsonData))
 	if incrementalOtaFile != "" {
-		ota, _ := CreateOtaJson(incrementalOtaFile, deviceInfo)
+		ota, _ := CreateOtaJson(incrementalOtaFile, deviceInfo, dumpPath)
 		jsonData, err := json.MarshalIndent(ota, "", "  ")
 		if err != nil {
 			Log.Error("Error while marshalling json: %s", err)

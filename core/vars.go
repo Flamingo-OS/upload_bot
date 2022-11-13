@@ -16,7 +16,6 @@ var Collection *mongo.Collection // mongodb collection
 var DriveService *drive.Service  // Gdrive service
 var DriveClient *http.Client     // Gdrive client
 
-const DumpPath string = "Dumpster/"
 const DeviceOrg = "FlamingoOS-Devices"
 const MainOrg = "Flamingo-OS"
 const Branch = "A13"

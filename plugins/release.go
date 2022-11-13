@@ -20,13 +20,13 @@ const bannerLink = "https://sourceforge.net/projects/kosp/files/banners/banner-0
 
 // validates the release is indeed a flamingo OS file
 // also creates and pushes OTA file
-func validateRelease(fileNames []string) (core.DeviceInfo, error) {
+func validateRelease(fileNames []string, dumpPath string) (core.DeviceInfo, error) {
 	deviceInfo, fullOtaFile, incrementalOtaFile, err := core.ParseDeviceInfo(fileNames)
 	if err != nil {
 		return core.DeviceInfo{}, err
 	}
 	core.Log.Info("Parsed device info:", deviceInfo)
-	err = core.CreateOTACommit(deviceInfo, fullOtaFile, incrementalOtaFile)
+	err = core.CreateOTACommit(deviceInfo, fullOtaFile, incrementalOtaFile, dumpPath)
 	if err != nil {
 		return deviceInfo, err
 	}
@@ -94,10 +94,6 @@ func releaseHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	chat := ctx.EffectiveChat
 	core.Log.Infoln("Recieved request to handle /release")
 
-	// create and delete dir after completion
-	os.Mkdir(core.DumpPath, 0755)
-	defer os.RemoveAll(core.DumpPath)
-
 	// sanity checks. should have a download link, should be a maintainer
 	args := ctx.Args()[1:]
 	if len(args) == 0 {
@@ -123,6 +119,17 @@ func releaseHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	core.CancelTasks.Insert(taskId.Uint64())
 	defer core.CancelTasks.Remove(taskId.Uint64())
 
+	var dumpPath string = fmt.Sprintf("Dumpster/%s/", taskId.String())
+	// create and delete dir after completion
+	core.Log.Infoln("Creating directory:", dumpPath)
+	e := os.MkdirAll(dumpPath, os.ModePerm)
+	if e != nil {
+		core.Log.Errorln(e)
+		b.SendMessage(chat.Id, "Something went wrong with creating directory", &gotgbot.SendMessageOpts{})
+		return e
+	}
+	defer os.RemoveAll(dumpPath)
+
 	// Actual start of the release process
 	msgTxt := fmt.Sprintf("Starting release process...\nYou can cancel using `/cancel %d`", taskId.Uint64())
 	m, e := b.SendMessage(chat.Id, msgTxt, &gotgbot.SendMessageOpts{ParseMode: "markdown"})
@@ -138,7 +145,7 @@ func releaseHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	for _, url := range args {
 		// download the file
 		core.Log.Info("Downloading file with url:", url)
-		f, e := documents.DocumentFactory(url)
+		f, e := documents.DocumentFactory(url, dumpPath)
 		if e != nil {
 			core.Log.Errorln(e)
 			b.SendMessage(chat.Id, "Download failed. Please try again or ask darknanobot", &gotgbot.SendMessageOpts{})
@@ -158,7 +165,7 @@ func releaseHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	msgTxt = fmt.Sprintf("Finished Downloading ....\nValidating release...\nYou can cancel using `/cancel %d`", taskId.Uint64())
 	m.EditText(b, msgTxt, &gotgbot.EditMessageTextOpts{ParseMode: "markdown"})
 
-	deviceInfo, err := validateRelease(filePaths)
+	deviceInfo, err := validateRelease(filePaths, dumpPath)
 	if err != nil {
 		core.Log.Errorln(err)
 		b.SendMessage(chat.Id, fmt.Sprintf("Release failed due to: %s", err), &gotgbot.SendMessageOpts{})

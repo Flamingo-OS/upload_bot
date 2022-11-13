@@ -17,14 +17,14 @@ type OTA struct {
 	PreBuildIncremental string            `json:"pre_build_incremental,omitempty"`
 }
 
-func CreateOtaJson(zipFilePath string, deviceInfo DeviceInfo) (OTA, error) {
+func CreateOtaJson(zipFilePath string, deviceInfo DeviceInfo, dumpPath string) (OTA, error) {
 	Log.Info("Creating OTA json for: ", zipFilePath)
 	fileStat, err := os.Stat(zipFilePath)
 	if err != nil {
 		Log.Error("Error while getting file stats:", err)
 		return OTA{}, err
 	}
-	a, err := UnzipFile(zipFilePath, strings.Trim(fileStat.Name(), ".zip"))
+	a, err := UnzipFile(zipFilePath, strings.Trim(fileStat.Name(), ".zip"), dumpPath)
 	if err != nil {
 		Log.Error("Error while unzipping file:", err)
 		return OTA{}, err
