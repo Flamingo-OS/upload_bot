@@ -69,6 +69,7 @@ func CreateOTACommit(deviceInfo DeviceInfo, fullOtaFile string, incrementalOtaFi
 	w.Add(incrementalOtaPath)
 
 	commitMsg := fmt.Sprintf("%s: update %s", deviceInfo.DeviceName, formatTime)
+	w.Pull(&git.PullOptions{})
 	_, err = w.Commit(commitMsg, &git.CommitOptions{
 		Author: &object.Signature{
 			Name:  "github-actions[bot]",
