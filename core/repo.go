@@ -64,14 +64,15 @@ func CreateOTACommit(deviceInfo DeviceInfo, fullOtaFile string, incrementalOtaFi
 		return err
 	}
 
+	Mut.Lock()
+	defer Mut.Unlock()
+
+	w.Pull(&git.PullOptions{})
 	w.Add(changelogPath)
 	w.Add(otaPath)
 	w.Add(incrementalOtaPath)
 
-	Mut.Lock()
-	defer Mut.Unlock()
 	commitMsg := fmt.Sprintf("%s: update %s", deviceInfo.DeviceName, formatTime)
-	w.Pull(&git.PullOptions{})
 	_, err = w.Commit(commitMsg, &git.CommitOptions{
 		Author: &object.Signature{
 			Name:  "github-actions[bot]",
@@ -85,16 +86,9 @@ func CreateOTACommit(deviceInfo DeviceInfo, fullOtaFile string, incrementalOtaFi
 		return err
 	}
 
-	err = r.Push(&git.PushOptions{
+	return r.Push(&git.PushOptions{
 		Auth: &http.BasicAuth{
 			Username: "npv12",
 			Password: Config.GithubToken,
 		}})
-
-	if err != nil {
-		Log.Errorf("Error: %v", err)
-		return err
-	}
-
-	return nil
 }
