@@ -78,6 +78,10 @@ func FindShaSum(filePath string) (string, error) {
 }
 
 func writeToFile(fileName string, content string) error {
+	if _, err := os.Stat(fileName); os.IsNotExist(err) {
+		f := strings.Split(fileName, "/")
+		os.MkdirAll(strings.Join(f[:len(f)-1], "/"), os.ModePerm)
+	}
 	f, err := os.Create(fileName)
 	if err != nil {
 		Log.Error("Error while creating file:", err)
