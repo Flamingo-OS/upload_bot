@@ -39,6 +39,7 @@ func addMaintainerHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	e := database.AddMaintainer(userId, userName, args)
 	if e != nil {
 		msg.EditText(b, "Error adding maintainer. Please try again later.", &gotgbot.EditMessageTextOpts{})
+		return e
 	}
 
 	msg.EditText(b, "Successfully added a maintainer", &gotgbot.EditMessageTextOpts{})
@@ -58,7 +59,8 @@ func removeMaintainerHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 
 	e := database.RemoveMaintainer(userId)
 	if e != nil {
-		msg.EditText(b, "Error adding maintainer. Please try again later.", &gotgbot.EditMessageTextOpts{})
+		msg.EditText(b, "Error removing maintainer. Please try again later.", &gotgbot.EditMessageTextOpts{})
+		return e
 	}
 
 	msg.EditText(b, "Successfully removed the maintainer", &gotgbot.EditMessageTextOpts{})
@@ -86,6 +88,7 @@ func removeDevicesHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	e := database.RemoveDevice(userId, args)
 	if e != nil {
 		msg.EditText(b, "Something went wrong while removing device", &gotgbot.EditMessageTextOpts{})
+		return e
 	}
 
 	msg.EditText(b, "Successfully removed the device(s)", &gotgbot.EditMessageTextOpts{})
@@ -113,6 +116,7 @@ func promoteAdminHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	e := database.PromoteAdmin(replyMessage.From.Id)
 	if e != nil {
 		msg.EditText(b, "Something went wrong while promoting user", &gotgbot.EditMessageTextOpts{})
+		return e
 	}
 
 	msg.EditText(b, "Successfully promoted user", &gotgbot.EditMessageTextOpts{})
@@ -140,6 +144,7 @@ func demoteAdminHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	e := database.DemoteAdmin(replyMessage.From.Id)
 	if e != nil {
 		msg.EditText(b, "Something went wrong while demoting user", &gotgbot.EditMessageTextOpts{})
+		return e
 	}
 
 	msg.EditText(b, "Successfully demoted user", &gotgbot.EditMessageTextOpts{})
@@ -169,6 +174,7 @@ func addSupportGroupHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	e := database.AddSupportGroup(userId, supportGroup)
 	if e != nil {
 		msg.EditText(b, "Something went wrong while adding support group", &gotgbot.EditMessageTextOpts{})
+		return e
 	}
 
 	msg.EditText(b, "Successfully added support group", &gotgbot.EditMessageTextOpts{})
