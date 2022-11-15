@@ -47,6 +47,7 @@ func AddMaintainer(userId int64, maintainerName string, devices []string) error 
 	} else {
 		core.Log.Infoln("Adding maintainer...")
 		err = addMaintainer(maintainerName, userId, devices)
+		core.Log.Infoln("Error generated while adding maintainer:", err)
 	}
 	return err
 }

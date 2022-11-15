@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/Flamingo-OS/upload-bot/core"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -13,13 +12,12 @@ const dbName = "kosp"
 const colName = "maintainer"
 
 type Maintainers struct {
-	Id             primitive.ObjectID `bson:"_id"`
-	MaintainerName string             `bson:"name"`
-	UserId         int64              `bson:"user_id"`
-	Devices        []string           `bson:"devices"`
-	IsMaintainer   bool               `bson:"is_maintainer"`
-	IsAdmin        bool               `bson:"is_admin"`
-	SupportGroup   string             `bson:"support_group"`
+	MaintainerName string   `bson:"name"`
+	UserId         int64    `bson:"user_id"`
+	Devices        []string `bson:"devices"`
+	IsMaintainer   bool     `bson:"is_maintainer"`
+	IsAdmin        bool     `bson:"is_admin"`
+	SupportGroup   string   `bson:"support_group"`
 }
 
 // connect to the database
