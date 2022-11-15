@@ -122,20 +122,20 @@ func releaseHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	var dumpPath string = fmt.Sprintf("Dumpster/%s/", taskId.String())
 	// create and delete dir after completion
 	core.Log.Infoln("Creating directory:", dumpPath)
-	e := os.MkdirAll(dumpPath, os.ModePerm)
-	if e != nil {
-		core.Log.Errorln(e)
+	err = os.MkdirAll(dumpPath, os.ModePerm)
+	if err != nil {
+		core.Log.Errorln(err)
 		b.SendMessage(chat.Id, "Something went wrong with creating directory", &gotgbot.SendMessageOpts{})
-		return e
+		return err
 	}
 	defer os.RemoveAll(dumpPath)
 
 	// Actual start of the release process
 	msgTxt := fmt.Sprintf("Starting release process...\nYou can cancel using `/cancel %d`", taskId.Uint64())
-	m, e := b.SendMessage(chat.Id, msgTxt, &gotgbot.SendMessageOpts{ParseMode: "markdown"})
-	if e != nil {
+	m, err := b.SendMessage(chat.Id, msgTxt, &gotgbot.SendMessageOpts{ParseMode: "markdown"})
+	if err != nil {
 		core.Log.Error("Something went wrong")
-		return e
+		return err
 	}
 	defer b.DeleteMessage(chat.Id, m.MessageId, &gotgbot.DeleteMessageOpts{})
 
@@ -145,11 +145,11 @@ func releaseHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	for _, url := range args {
 		// download the file
 		core.Log.Info("Downloading file with url:", url)
-		f, e := documents.DocumentFactory(url, dumpPath)
-		if e != nil {
-			core.Log.Errorln(e)
+		f, err := documents.DocumentFactory(url, dumpPath)
+		if err != nil {
+			core.Log.Errorln(err)
 			b.SendMessage(chat.Id, "Download failed. Please try again or ask darknanobot", &gotgbot.SendMessageOpts{})
-			return e
+			return err
 		}
 		filePaths = append(filePaths, f)
 		msgTxt = fmt.Sprintf("Downloaded file to %s. Have downloaded %v files.\nYou can cancel using `/cancel %d`", f, len(filePaths), taskId.Uint64())
@@ -211,15 +211,15 @@ func releaseHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	msgTxt = strings.Trim(msgTxt, ", `")
 	core.Log.Info(msgTxt)
 
-	maintainers, e := database.GetMaintainer(deviceInfo.DeviceName)
+	maintainers, err := database.GetMaintainer(deviceInfo.DeviceName)
 
-	if e != nil {
-		core.Log.Errorln("Couldn't fetch maintainers", e)
+	if err != nil {
+		core.Log.Errorln("Couldn't fetch maintainers", err)
 	}
 
-	supportGroup, e := database.GetSupportGroup(maintainers[0].UserId)
-	if e != nil {
-		core.Log.Errorln("Couldn't fetch support group", e)
+	supportGroup, err := database.GetSupportGroup(maintainers[0].UserId)
+	if err != nil {
+		core.Log.Errorln("Couldn't fetch support group", err)
 	}
 
 	if core.CancelTasks.GetCancelStatus(taskId.Uint64()) {
@@ -228,18 +228,19 @@ func releaseHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		return nil
 	}
 
-	msgTxt, e = CreateReleaseText(deviceInfo, uploadUrls, maintainers, supportGroup)
-	if e != nil {
-		core.Log.Errorln("Couldn't create release text", e)
+	msgTxt, err = CreateReleaseText(deviceInfo, uploadUrls, maintainers, supportGroup)
+	if err != nil {
+		core.Log.Errorln("Couldn't create release text", err)
 		b.SendMessage(chat.Id, "Something went wrong while creating release", &gotgbot.SendMessageOpts{})
+		return err
 	}
 	_, _ = b.SendPhoto(chat.Id, bannerLink, &gotgbot.SendPhotoOpts{
 		Caption:   msgTxt,
 		ParseMode: "Markdown",
 	})
-	_, e = b.SendPhoto(core.UpdateChannelId, bannerLink, &gotgbot.SendPhotoOpts{
+	_, err = b.SendPhoto(core.UpdateChannelId, bannerLink, &gotgbot.SendPhotoOpts{
 		Caption:   msgTxt,
 		ParseMode: "Markdown",
 	})
-	return e
+	return err
 }

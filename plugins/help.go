@@ -27,6 +27,6 @@ func helpHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	/demote - demote the user being replied to an admin
 	/promote - promote the user being replied to an admin
 	`
-	_, e := b.SendMessage(chat.Id, helpTxt, &gotgbot.SendMessageOpts{})
-	return e
+	_, err := b.SendMessage(chat.Id, helpTxt, &gotgbot.SendMessageOpts{})
+	return err
 }

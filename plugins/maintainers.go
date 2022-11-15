@@ -16,30 +16,34 @@ func addMaintainerHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 
 	replyMessage := ctx.EffectiveMessage.ReplyToMessage
 	if replyMessage == nil {
-		_, e := b.SendMessage(chat.Id, "Reply to a message from the user you want to add as maintainer.", &gotgbot.SendMessageOpts{})
-		return e
+		_, err := b.SendMessage(chat.Id, "Reply to a message from the user you want to add as maintainer.", &gotgbot.SendMessageOpts{})
+		return err
 	}
 
 	if !database.IsAdmin(ctx.EffectiveUser.Id) {
-		_, e := b.SendMessage(chat.Id, "Ask an admin to add you as a maintainer", &gotgbot.SendMessageOpts{})
-		return e
+		_, err := b.SendMessage(chat.Id, "Ask an admin to add you as a maintainer", &gotgbot.SendMessageOpts{})
+		return err
 	}
 
 	args := strings.Split(ctx.EffectiveMessage.Text, " ")[1:]
 	if len(args) == 0 {
-		_, e := b.SendMessage(chat.Id, "Please provide atleast one devide", &gotgbot.SendMessageOpts{})
-		return e
+		_, err := b.SendMessage(chat.Id, "Please provide atleast one devide", &gotgbot.SendMessageOpts{})
+		return err
 	}
 
 	msg, err := b.SendMessage(chat.Id, "Adding a new maintainer", &gotgbot.SendMessageOpts{})
+	if err != nil {
+		msg.EditText(b, "Something went wrong while promoting user", &gotgbot.EditMessageTextOpts{})
+		return err
+	}
 
 	userName := replyMessage.From.FirstName
 	userId := replyMessage.From.Id
 
-	e := database.AddMaintainer(userId, userName, args)
-	if e != nil {
+	err = database.AddMaintainer(userId, userName, args)
+	if err != nil {
 		msg.EditText(b, "Error adding maintainer. Please try again later.", &gotgbot.EditMessageTextOpts{})
-		return e
+		return err
 	}
 
 	msg.EditText(b, "Successfully added a maintainer", &gotgbot.EditMessageTextOpts{})
@@ -56,11 +60,15 @@ func removeMaintainerHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		userId = replyMessage.From.Id
 	}
 	msg, err := b.SendMessage(chat.Id, "Removing the maintainer", &gotgbot.SendMessageOpts{})
+	if err != nil {
+		msg.EditText(b, "Something went wrong while promoting user", &gotgbot.EditMessageTextOpts{})
+		return err
+	}
 
-	e := database.RemoveMaintainer(userId)
-	if e != nil {
+	err = database.RemoveMaintainer(userId)
+	if err != nil {
 		msg.EditText(b, "Error removing maintainer. Please try again later.", &gotgbot.EditMessageTextOpts{})
-		return e
+		return err
 	}
 
 	msg.EditText(b, "Successfully removed the maintainer", &gotgbot.EditMessageTextOpts{})
@@ -79,16 +87,20 @@ func removeDevicesHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 	args := strings.Split(ctx.EffectiveMessage.Text, " ")[1:]
 	if len(args) == 0 {
-		_, e := b.SendMessage(chat.Id, "Please provide atleast one devide", &gotgbot.SendMessageOpts{})
-		return e
+		_, err := b.SendMessage(chat.Id, "Please provide atleast one devide", &gotgbot.SendMessageOpts{})
+		return err
 	}
 
 	msg, err := b.SendMessage(chat.Id, "Removing the device(s)", &gotgbot.SendMessageOpts{})
+	if err != nil {
+		msg.EditText(b, "Something went wrong while promoting user", &gotgbot.EditMessageTextOpts{})
+		return err
+	}
 
-	e := database.RemoveDevice(userId, args)
-	if e != nil {
+	err = database.RemoveDevice(userId, args)
+	if err != nil {
 		msg.EditText(b, "Something went wrong while removing device", &gotgbot.EditMessageTextOpts{})
-		return e
+		return err
 	}
 
 	msg.EditText(b, "Successfully removed the device(s)", &gotgbot.EditMessageTextOpts{})
@@ -102,24 +114,29 @@ func promoteAdminHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 
 	replyMessage := ctx.EffectiveMessage.ReplyToMessage
 	if replyMessage == nil {
-		_, e := b.SendMessage(chat.Id, "Reply to a message from the user you want to add as an admin.", &gotgbot.SendMessageOpts{})
-		return e
+		_, err := b.SendMessage(chat.Id, "Reply to a message from the user you want to add as an admin.", &gotgbot.SendMessageOpts{})
+		return err
 	}
 
 	if !database.IsAdmin(ctx.EffectiveUser.Id) {
-		_, e := b.SendMessage(chat.Id, "Ask an admin to promote you", &gotgbot.SendMessageOpts{})
-		return e
+		_, err := b.SendMessage(chat.Id, "Ask an admin to promote you", &gotgbot.SendMessageOpts{})
+		return err
 	}
 
 	msg, err := b.SendMessage(chat.Id, "Promoting user", &gotgbot.SendMessageOpts{})
 
-	e := database.PromoteAdmin(replyMessage.From.Id)
-	if e != nil {
-		msg.EditText(b, "Something went wrong while promoting user", &gotgbot.EditMessageTextOpts{})
-		return e
+	if err != nil {
+		core.Log.Errorln("Error sending message", err)
+		return err
 	}
 
-	msg.EditText(b, "Successfully promoted user", &gotgbot.EditMessageTextOpts{})
+	err = database.PromoteAdmin(replyMessage.From.Id)
+	if err != nil {
+		msg.EditText(b, "Something went wrong while promoting user", &gotgbot.EditMessageTextOpts{})
+		return err
+	}
+
+	_, _, err = msg.EditText(b, "Successfully promoted user", &gotgbot.EditMessageTextOpts{})
 
 	return err
 }
@@ -130,21 +147,25 @@ func demoteAdminHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 
 	replyMessage := ctx.EffectiveMessage.ReplyToMessage
 	if replyMessage == nil {
-		_, e := b.SendMessage(chat.Id, "Reply to a message from the user you want to remove as an admin.", &gotgbot.SendMessageOpts{})
-		return e
+		_, err := b.SendMessage(chat.Id, "Reply to a message from the user you want to remove as an admin.", &gotgbot.SendMessageOpts{})
+		return err
 	}
 
 	if !database.IsAdmin(ctx.EffectiveUser.Id) {
-		_, e := b.SendMessage(chat.Id, "You aren't an admin?!", &gotgbot.SendMessageOpts{})
-		return e
+		_, err := b.SendMessage(chat.Id, "You aren't an admin?!", &gotgbot.SendMessageOpts{})
+		return err
 	}
 
 	msg, err := b.SendMessage(chat.Id, "Demoting user", &gotgbot.SendMessageOpts{})
+	if err != nil {
+		msg.EditText(b, "Something went wrong while promoting user", &gotgbot.EditMessageTextOpts{})
+		return err
+	}
 
-	e := database.DemoteAdmin(replyMessage.From.Id)
-	if e != nil {
+	err = database.DemoteAdmin(replyMessage.From.Id)
+	if err != nil {
 		msg.EditText(b, "Something went wrong while demoting user", &gotgbot.EditMessageTextOpts{})
-		return e
+		return err
 	}
 
 	msg.EditText(b, "Successfully demoted user", &gotgbot.EditMessageTextOpts{})
@@ -163,18 +184,22 @@ func addSupportGroupHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 	args := strings.Split(ctx.EffectiveMessage.Text, " ")[1:]
 	if len(args) == 0 {
-		_, e := b.SendMessage(chat.Id, "Please provide a support group", &gotgbot.SendMessageOpts{})
-		return e
+		_, err := b.SendMessage(chat.Id, "Please provide a support group", &gotgbot.SendMessageOpts{})
+		return err
 	}
 
 	supportGroup := args[0]
 
 	msg, err := b.SendMessage(chat.Id, "Adding the support group", &gotgbot.SendMessageOpts{})
+	if err != nil {
+		msg.EditText(b, "Something went wrong while promoting user", &gotgbot.EditMessageTextOpts{})
+		return err
+	}
 
-	e := database.AddSupportGroup(userId, supportGroup)
-	if e != nil {
+	err = database.AddSupportGroup(userId, supportGroup)
+	if err != nil {
 		msg.EditText(b, "Something went wrong while adding support group", &gotgbot.EditMessageTextOpts{})
-		return e
+		return err
 	}
 
 	msg.EditText(b, "Successfully added support group", &gotgbot.EditMessageTextOpts{})
