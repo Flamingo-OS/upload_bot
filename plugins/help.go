@@ -15,6 +15,8 @@ func helpHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	/help - Show this message
 	/ping - Check how slow I am today ;)
 	/release - Upload a release
+			It also has certain flags like below
+			-n or --notes - addes extra notes to release posts
 	/start - Check if I am alive? 
 
 	These below are specific to maintainers. Alternatively admins can use by replying to a user
