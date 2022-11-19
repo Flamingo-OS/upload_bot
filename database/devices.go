@@ -22,7 +22,7 @@ func GetDevices(userId int64) []string {
 func RemoveDevice(userId int64, devices []string) error {
 	core.Log.Infoln("Removing device...")
 	filter := bson.M{"user_id": userId}
-	update := bson.M{"$pull": bson.M{"devices": bson.M{"$each": devices}}}
+	update := bson.M{"$pull": bson.M{"devices": bson.M{"$in": devices}}}
 	_, err := core.Collection.UpdateOne(context.Background(), filter, update)
 	return err
 }
