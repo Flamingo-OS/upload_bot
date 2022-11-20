@@ -23,6 +23,7 @@ func helpHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	/addGroup <link> - add a support group link
 	/dropDevice <devices separated by space> - drop device from maintainence
 	/remove - to drop yourself from maintainer status
+	/setNotes - set notes for your releases
 
 	These below are specific to admins
 	/add <devices> - add a new maintainer. Reply to the user
