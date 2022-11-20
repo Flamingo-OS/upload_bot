@@ -50,23 +50,9 @@ func CreateReleaseText(deviceInfo core.DeviceInfo, urls []string, maintainers []
 
 		Downloads`, deviceInfo.DeviceName, buildTime.Format("02-01-2006"))
 
-	for _, url := range urls {
-		if strings.Contains(url, "-full") {
-			msgTxt += fmt.Sprintf(`
-		-	[Full](%s)	`, url)
-		} else if strings.Contains(url, "-incremental") {
-			msgTxt += fmt.Sprintf(`
-		-	[Incremental](%s)	`, url)
-		} else if strings.Contains(url, "-fastboot") {
-			msgTxt += fmt.Sprintf(`
-		-	[Fastboot](%s)	`, url)
-		} else if strings.Contains(url, "-boot") {
-			msgTxt += fmt.Sprintf(`
-		-	[Boot](%s)	`, url)
-		} else if strings.Contains(url, "-recovery") {
-			msgTxt += fmt.Sprintf(`
-		-	[Recovery](%s)	`, url)
-		}
+	for format, url := range deviceInfo.BuildFormat {
+		msgTxt += fmt.Sprintf(`
+		-	[%s](%s)	`, format, url)
 	}
 	msgTxt += fmt.Sprintf(`
 
