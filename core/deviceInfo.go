@@ -14,29 +14,14 @@ type DeviceInfo struct {
 	BuildFormat map[string]string `json:"build_format"` // full, incremental, etc
 }
 
-func ParseDeviceInfo(fileName []string) (DeviceInfo, error) {
-	Log.Info("Parsing device info from ", fileName)
+func ParseDeviceInfo(files []string) (DeviceInfo, error) {
+	Log.Info("Parsing device info from ", files)
 	var deviceInfo DeviceInfo = DeviceInfo{
 		BuildFormat: map[string]string{},
 	}
-	buildFormats := []string{"full", "incremental", "boot", "fastboot", "recovery"}
-	for _, file := range fileName {
-		for _, buildFormat := range buildFormats {
-			if strings.Contains(file, buildFormat) {
-				deviceInfo.BuildFormat[buildFormat] = file
-			}
-		}
-	}
 
-	if deviceInfo.BuildFormat["full"] == "" {
-		return deviceInfo, fmt.Errorf("full build not found")
-	}
-
-	deviceDets := strings.Split(fileName[0], "-")
-	if len(deviceDets) < 9 {
-		return deviceInfo, fmt.Errorf("invalid file. This isn't a flamingoOS file")
-	}
-	if strings.Contains(deviceDets[0], "FlamingoOS") && deviceDets[4] != "Official" {
+	deviceDets := strings.Split(files[0], "-")
+	if len(deviceDets) < 9 || (strings.Contains(deviceDets[0], "FlamingoOS") && deviceDets[4] != "Official") {
 		return deviceInfo, fmt.Errorf("invalid file. This isn't a flamingoOS file")
 	}
 
@@ -45,6 +30,26 @@ func ParseDeviceInfo(fileName []string) (DeviceInfo, error) {
 	deviceInfo.BuildType = deviceDets[3]
 	deviceInfo.Flavour = deviceDets[5]
 	deviceInfo.BuildDate = deviceDets[6]
+
+	if deviceInfo.BuildType != "user" {
+		return deviceInfo, fmt.Errorf("official builds needs user build type")
+	}
+
+	buildFormats := []string{"full", "incremental", "boot", "fastboot", "recovery"}
+	for _, file := range files {
+		for _, buildFormat := range buildFormats {
+			if strings.Contains(file, buildFormat) {
+				fileName := strings.Split(file, "/")[len(strings.Split(file, "/"))-1]
+				uploadFolder := Branch + "/" + deviceInfo.DeviceName + "/" + deviceInfo.Flavour
+				uploadUrl := BaseUrl + uploadFolder + "/" + fileName
+				deviceInfo.BuildFormat[buildFormat] = uploadUrl
+			}
+		}
+	}
+
+	if deviceInfo.BuildFormat["full"] == "" {
+		return deviceInfo, fmt.Errorf("full build not found")
+	}
 
 	return deviceInfo, nil
 }

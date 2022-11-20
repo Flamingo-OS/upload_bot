@@ -25,7 +25,7 @@ func validateRelease(fileNames []string, dumpPath string) (core.DeviceInfo, erro
 	return deviceInfo, err
 }
 
-func CreateReleaseText(deviceInfo core.DeviceInfo, urls []string, maintainers []database.Maintainers, deviceSupport string, notes string) (string, error) {
+func CreateReleaseText(deviceInfo core.DeviceInfo, maintainers []database.Maintainers, deviceSupport string, notes string) (string, error) {
 	formatTime := time.Now().Format("2006-01-02")
 	buildTime, _ := time.Parse("20060102", deviceInfo.BuildDate)
 	av, err := strconv.ParseFloat(deviceInfo.Version, 64)

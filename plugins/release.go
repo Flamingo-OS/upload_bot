@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"math/big"
 	"os"
-	"strings"
 
 	"github.com/Flamingo-OS/upload-bot/core"
 	"github.com/Flamingo-OS/upload-bot/database"
@@ -101,7 +100,6 @@ func releaseHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	// upload the files
 	msgTxt = fmt.Sprintf("Uploading files...\nYou can cancel using `/cancel %d`", taskId.Uint64())
 	m.EditText(b, msgTxt, &gotgbot.EditMessageTextOpts{ParseMode: "markdown"})
-	var uploadUrls []string
 	for _, f := range filePaths {
 		uploadFolder := core.Branch + "/" + deviceInfo.DeviceName + "/" + deviceInfo.Flavour
 		err := documents.OneDriveUploader(f, "flamingo"+"/"+uploadFolder)
@@ -110,9 +108,6 @@ func releaseHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 			b.SendMessage(chat.Id, "Upload failed. Please try again or ask darknanobot", &gotgbot.SendMessageOpts{})
 			return err
 		}
-		fileName := strings.Split(f, "/")[len(strings.Split(f, "/"))-1]
-		uploadUrl := core.BaseUrl + uploadFolder + "/" + fileName
-		uploadUrls = append(uploadUrls, uploadUrl)
 		msgTxt = fmt.Sprintf("Uploaded file %s\nYou can cancel using `/cancel %d`", f, taskId.Uint64())
 
 		if core.CancelTasks.GetCancelStatus(taskId.Uint64()) {
@@ -123,13 +118,6 @@ func releaseHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 
 		m.EditText(b, msgTxt, &gotgbot.EditMessageTextOpts{ParseMode: "markdown"})
 	}
-
-	msgTxt = "Uploaded file to `"
-	for _, url := range uploadUrls {
-		msgTxt += url + "`, `"
-	}
-	msgTxt = strings.Trim(msgTxt, ", `")
-	core.Log.Info(msgTxt)
 
 	maintainers, err := database.GetMaintainer(deviceInfo.DeviceName)
 
@@ -153,7 +141,7 @@ func releaseHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		return nil
 	}
 
-	msgTxt, err = CreateReleaseText(deviceInfo, uploadUrls, maintainers, supportGroup, notes)
+	msgTxt, err = CreateReleaseText(deviceInfo, maintainers, supportGroup, notes)
 	if err != nil {
 		core.Log.Errorln("Couldn't create release text", err)
 		b.SendMessage(chat.Id, "Something went wrong while creating release", &gotgbot.SendMessageOpts{})
