@@ -234,11 +234,11 @@ func setNotesHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		return err
 	}
 	args := strings.Split(ctx.EffectiveMessage.Text, " ")[1:]
-	if len(args) == 0 {
-		_, err := b.SendMessage(chat.Id, "Please provide a note", &gotgbot.SendMessageOpts{})
-		return err
-	}
 	note := strings.Join(args, " ")
+	if len(args) == 0 {
+		core.Log.Infoln("No notes provided. Clearing it")
+		note = ""
+	}
 	err := database.SetNotes(userId, note)
 	if err != nil {
 		_, err := b.SendMessage(chat.Id, "Something went wrong while setting notes", &gotgbot.SendMessageOpts{})
