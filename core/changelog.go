@@ -44,7 +44,7 @@ func findLastDate(device string, isVanilla bool) (time.Time, error) {
 
 	if (resp.StatusCode != 200) || (err != nil) {
 		Log.Error("Status:", resp.StatusCode)
-		return time.Time{}, err
+		return time.Time{}, fmt.Errorf("could not find last date")
 	}
 	var ota OTA
 	err = json.NewDecoder(resp.Body).Decode(&ota)
@@ -313,7 +313,7 @@ func CreateChangelog(deviceName string, isVanilla bool) (string, error) {
 	date, err := findLastDate(deviceName, isVanilla)
 	if err != nil {
 		Log.Error("Error while finding last date: ", err)
-		return "", err
+		return "Initial release", err
 	}
 	repos = map[string]string{}
 	deviceRepos = map[string]string{}
