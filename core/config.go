@@ -2,7 +2,6 @@ package core
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"os"
 )
 
@@ -23,11 +22,11 @@ type BotConfig struct {
 
 func NewBotConfig(fileName string) *BotConfig {
 	ac := &BotConfig{}
-	b, err := ioutil.ReadFile(fileName)
+	b, err := os.ReadFile(fileName)
 	if err != nil {
 		Log.Error(err)
 		Log.Info("Reading config for docker container")
-		b, err := ioutil.ReadFile("/etc/secrets/config.json") // for docker
+		b, err := os.ReadFile("/etc/secrets/config.json") // for docker
 		if err != nil {
 			Log.Error(err)
 			Log.Info("Reading config from environment")

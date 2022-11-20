@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"math"
 	"net/http"
 	"net/url"
@@ -48,7 +48,7 @@ func getAccessToken() (string, error) {
 		return "", err
 	}
 	defer resp.Body.Close()
-	body, _ := ioutil.ReadAll(resp.Body)
+	body, _ := io.ReadAll(resp.Body)
 
 	var tokResp tokenResponse
 	_ = json.Unmarshal(body, &tokResp)
@@ -80,7 +80,7 @@ func listDir(accessToken string, fileId string) (map[string]string, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
-	body, _ := ioutil.ReadAll(resp.Body)
+	body, _ := io.ReadAll(resp.Body)
 
 	if string(body) == "" {
 		return nil, fmt.Errorf("empty response body")
@@ -153,7 +153,7 @@ func makeFolder(accessToken string, fileName string, parentFileId string) (strin
 	}
 	defer resp.Body.Close()
 
-	resBody, _ := ioutil.ReadAll(resp.Body)
+	resBody, _ := io.ReadAll(resp.Body)
 	if string(resBody) == "" {
 		return "", fmt.Errorf("failed to create folder")
 	}
@@ -218,7 +218,7 @@ func uploadFile(accessToken string, filePath string, parentFileId string) error 
 	}
 	defer resp.Body.Close()
 
-	resBody, _ := ioutil.ReadAll(resp.Body)
+	resBody, _ := io.ReadAll(resp.Body)
 	var resData interface{}
 	json.Unmarshal(resBody, &resData)
 	uploadUrl := resData.(map[string]interface{})["uploadUrl"].(string)
@@ -250,7 +250,7 @@ func uploadFile(accessToken string, filePath string, parentFileId string) error 
 			return err
 		}
 		defer resp.Body.Close()
-		_, err = ioutil.ReadAll(resp.Body)
+		_, err = io.ReadAll(resp.Body)
 		if err != nil {
 			core.Log.Error("Error reading response body: ", err)
 			return err
