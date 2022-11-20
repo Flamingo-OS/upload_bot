@@ -142,8 +142,10 @@ func releaseHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		core.Log.Errorln("Couldn't fetch support group", err)
 	}
 
-	//TODO: Add support for notes
-	notes := ""
+	notes, err := database.GetNotes(userId)
+	if err != nil {
+		core.Log.Errorln("Couldn't fetch notes", err)
+	}
 
 	if core.CancelTasks.GetCancelStatus(taskId.Uint64()) {
 		core.Log.Infoln("Release cancelled by user")

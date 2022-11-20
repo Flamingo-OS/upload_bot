@@ -7,16 +7,12 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func GetNotes(userId int64) string {
+func GetNotes(userId int64) (string, error) {
 	core.Log.Infoln("Getting notes...")
 	filter := bson.M{"user_id": userId}
 	var result Maintainers
 	err := core.Collection.FindOne(context.Background(), filter).Decode(&result)
-	if err != nil {
-		core.Log.Errorln(err)
-		return ""
-	}
-	return result.Notes
+	return result.Notes, err
 }
 
 func SetNotes(userId int64, notes string) error {
