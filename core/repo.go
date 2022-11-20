@@ -89,7 +89,11 @@ func CreateOTACommit(deviceInfo DeviceInfo, dumpPath string) error {
 
 	changeLog, _ := CreateChangelog(deviceInfo.DeviceName, false)
 	changelogPath = deviceInfo.DeviceName + "/" + deviceInfo.Flavour + "/" + "changelog_" + strings.ReplaceAll(formatTime, "-", "_")
-	ota, _ := CreateOtaJson(deviceInfo.BuildFormat["full"], deviceInfo, dumpPath)
+	ota, err := CreateOtaJson(deviceInfo.fullOtaPath, deviceInfo, dumpPath)
+	if err != nil {
+		Log.Error("Error while creating json: %s", err)
+		return err
+	}
 	otaJson, err := json.MarshalIndent(ota, "", "  ")
 	if err != nil {
 		Log.Error("Error while marshalling json: %s", err)
@@ -98,7 +102,7 @@ func CreateOTACommit(deviceInfo DeviceInfo, dumpPath string) error {
 	otaData := string(otaJson)
 	incrementalOtaData := ""
 	if deviceInfo.BuildFormat["incremental"] != "" {
-		ota, _ := CreateOtaJson(deviceInfo.BuildFormat["incremental"], deviceInfo, dumpPath)
+		ota, _ := CreateOtaJson(deviceInfo.incrementalOtaPath, deviceInfo, dumpPath)
 		incrementalOtaJson, err := json.MarshalIndent(ota, "", "  ")
 		if err != nil {
 			Log.Error("Error while marshalling json: %s", err)

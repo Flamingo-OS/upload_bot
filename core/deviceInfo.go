@@ -6,12 +6,14 @@ import (
 )
 
 type DeviceInfo struct {
-	DeviceName  string            `json:"device_name"`
-	Version     string            `json:"version"`
-	BuildDate   string            `json:"build_date"`
-	BuildType   string            `json:"build_type"` // user, userdebug, eng
-	Flavour     string            `json:"flavour"`
-	BuildFormat map[string]string `json:"build_format"` // full, incremental, etc
+	DeviceName         string            `json:"device_name"`
+	Version            string            `json:"version"`
+	BuildDate          string            `json:"build_date"`
+	BuildType          string            `json:"build_type"` // user, userdebug, eng
+	Flavour            string            `json:"flavour"`
+	BuildFormat        map[string]string `json:"build_format"` // full, incremental, etc
+	fullOtaPath        string
+	incrementalOtaPath string
 }
 
 func ParseDeviceInfo(files []string) (DeviceInfo, error) {
@@ -46,6 +48,11 @@ func ParseDeviceInfo(files []string) (DeviceInfo, error) {
 				uploadFolder := Branch + "/" + deviceInfo.DeviceName + "/" + deviceInfo.Flavour
 				uploadUrl := BaseUrl + uploadFolder + "/" + fileName
 				deviceInfo.BuildFormat[buildFormat] = uploadUrl
+				if buildFormat == "full" {
+					deviceInfo.fullOtaPath = uploadUrl
+				} else if buildFormat == "incremental" {
+					deviceInfo.incrementalOtaPath = uploadUrl
+				}
 			}
 		}
 	}
