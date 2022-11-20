@@ -14,35 +14,30 @@ type DeviceInfo struct {
 	BuildFormat map[string]string `json:"build_format"` // full, incremental, etc
 }
 
-func ParseDeviceInfo(fileName []string) (DeviceInfo, string, string, error) {
+func ParseDeviceInfo(fileName []string) (DeviceInfo, error) {
 	Log.Info("Parsing device info from ", fileName)
-	var deviceInfo DeviceInfo = DeviceInfo{}
+	var deviceInfo DeviceInfo = DeviceInfo{
+		BuildFormat: map[string]string{},
+	}
 	buildFormats := []string{"full", "incremental", "boot", "fastboot", "recovery"}
-	fullOtaFile := ""
-	incrementalOtaFile := ""
 	for _, file := range fileName {
 		for _, buildFormat := range buildFormats {
 			if strings.Contains(file, buildFormat) {
 				deviceInfo.BuildFormat[buildFormat] = file
-				if buildFormat == "full" {
-					fullOtaFile = file
-				} else if buildFormat == "incremental" {
-					incrementalOtaFile = file
-				}
 			}
 		}
 	}
 
-	if fullOtaFile == "" {
-		return deviceInfo, "", "", fmt.Errorf("full build not found")
+	if deviceInfo.BuildFormat["full"] == "" {
+		return deviceInfo, fmt.Errorf("full build not found")
 	}
 
 	deviceDets := strings.Split(fileName[0], "-")
 	if len(deviceDets) < 9 {
-		return deviceInfo, "", "", fmt.Errorf("invalid file. This isn't a flamingoOS file")
+		return deviceInfo, fmt.Errorf("invalid file. This isn't a flamingoOS file")
 	}
 	if strings.Contains(deviceDets[0], "FlamingoOS") && deviceDets[4] != "Official" {
-		return deviceInfo, "", "", fmt.Errorf("invalid file. This isn't a flamingoOS file")
+		return deviceInfo, fmt.Errorf("invalid file. This isn't a flamingoOS file")
 	}
 
 	deviceInfo.Version = strings.Replace(deviceDets[1], "v", "", 1)
@@ -51,5 +46,5 @@ func ParseDeviceInfo(fileName []string) (DeviceInfo, string, string, error) {
 	deviceInfo.Flavour = deviceDets[5]
 	deviceInfo.BuildDate = deviceDets[6]
 
-	return deviceInfo, fullOtaFile, incrementalOtaFile, nil
+	return deviceInfo, nil
 }

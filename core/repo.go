@@ -77,7 +77,7 @@ func pushOTARepo(deviceInfo DeviceInfo, clonePath string, otaPath string, otaDat
 		}})
 }
 
-func CreateOTACommit(deviceInfo DeviceInfo, fullOtaFile string, incrementalOtaFile string, dumpPath string) error {
+func CreateOTACommit(deviceInfo DeviceInfo, dumpPath string) error {
 	Log.Info("Creating OTA commits")
 
 	clonePath := dumpPath + "OTA/"
@@ -89,7 +89,7 @@ func CreateOTACommit(deviceInfo DeviceInfo, fullOtaFile string, incrementalOtaFi
 
 	changeLog, _ := CreateChangelog(deviceInfo.DeviceName, false)
 	changelogPath = deviceInfo.DeviceName + "/" + deviceInfo.Flavour + "/" + "changelog_" + strings.ReplaceAll(formatTime, "-", "_")
-	ota, _ := CreateOtaJson(fullOtaFile, deviceInfo, dumpPath)
+	ota, _ := CreateOtaJson(deviceInfo.BuildFormat["full"], deviceInfo, dumpPath)
 	otaJson, err := json.MarshalIndent(ota, "", "  ")
 	if err != nil {
 		Log.Error("Error while marshalling json: %s", err)
@@ -97,8 +97,8 @@ func CreateOTACommit(deviceInfo DeviceInfo, fullOtaFile string, incrementalOtaFi
 	}
 	otaData := string(otaJson)
 	incrementalOtaData := ""
-	if incrementalOtaFile != "" {
-		ota, _ := CreateOtaJson(incrementalOtaFile, deviceInfo, dumpPath)
+	if deviceInfo.BuildFormat["incremental"] != "" {
+		ota, _ := CreateOtaJson(deviceInfo.BuildFormat["incremental"], deviceInfo, dumpPath)
 		incrementalOtaJson, err := json.MarshalIndent(ota, "", "  ")
 		if err != nil {
 			Log.Error("Error while marshalling json: %s", err)
