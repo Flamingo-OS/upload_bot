@@ -86,6 +86,9 @@ func CreateReleaseText(deviceInfo core.DeviceInfo, urls []string, maintainers []
 		} else if strings.Contains(url, "-boot") {
 			msgTxt += fmt.Sprintf(`
 		-	[Boot](%s)	`, url)
+		} else if strings.Contains(url, "-recovery") {
+			msgTxt += fmt.Sprintf(`
+		-	[Recovery](%s)	`, url)
 		}
 	}
 	msgTxt += fmt.Sprintf(`
