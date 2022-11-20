@@ -49,9 +49,9 @@ func ParseDeviceInfo(files []string) (DeviceInfo, error) {
 				uploadUrl := BaseUrl + uploadFolder + "/" + fileName
 				deviceInfo.BuildFormat[buildFormat] = uploadUrl
 				if buildFormat == "full" {
-					deviceInfo.fullOtaPath = uploadUrl
+					deviceInfo.fullOtaPath = file
 				} else if buildFormat == "incremental" {
-					deviceInfo.incrementalOtaPath = uploadUrl
+					deviceInfo.incrementalOtaPath = file
 				}
 			}
 		}
