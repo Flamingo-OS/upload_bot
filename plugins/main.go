@@ -17,5 +17,6 @@ func Main(d *ext.Dispatcher) {
 	d.AddHandler(handlers.NewCommand("promote", promoteAdminHandler))
 	d.AddHandler(handlers.NewCommand("release", releaseHandler))
 	d.AddHandler(handlers.NewCommand("remove", removeMaintainerHandler))
+	d.AddHandler(handlers.NewCommand("setNotes", setNotesHandler))
 	d.AddHandler(handlers.NewCommand("start", startHelper))
 }

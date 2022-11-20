@@ -15,6 +15,7 @@ func addMaintainer(maintainerName string, userId int64, devices []string) error 
 		IsMaintainer:   true,
 		IsAdmin:        false,
 		SupportGroup:   "",
+		Notes:          "",
 	})
 	return err
 }

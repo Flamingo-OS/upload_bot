@@ -220,3 +220,30 @@ func getAllMaintainers(b *gotgbot.Bot, ctx *ext.Context) error {
 	_, err := b.SendMessage(chat.Id, msgTxt, &gotgbot.SendMessageOpts{})
 	return err
 }
+
+func setNotesHandler(b *gotgbot.Bot, ctx *ext.Context) error {
+	core.Log.Infoln("Recieved request to handle /setNotes")
+	chat := ctx.EffectiveChat
+	userId := ctx.EffectiveUser.Id
+	if ctx.Message.ReplyToMessage != nil && database.IsAdmin(userId) {
+		userId = ctx.Message.ReplyToMessage.From.Id // switch to replied user if admin
+	}
+
+	if !database.IsMaintainer(ctx.EffectiveUser.Id) {
+		_, err := b.SendMessage(chat.Id, "This is maintainers only", &gotgbot.SendMessageOpts{})
+		return err
+	}
+	args := strings.Split(ctx.EffectiveMessage.Text, " ")[1:]
+	if len(args) == 0 {
+		_, err := b.SendMessage(chat.Id, "Please provide a note", &gotgbot.SendMessageOpts{})
+		return err
+	}
+	note := strings.Join(args, " ")
+	err := database.SetNotes(userId, note)
+	if err != nil {
+		_, err := b.SendMessage(chat.Id, "Something went wrong while setting notes", &gotgbot.SendMessageOpts{})
+		return err
+	}
+	_, err = b.SendMessage(chat.Id, "Successfully updated the notes", &gotgbot.SendMessageOpts{})
+	return err
+}

@@ -18,6 +18,7 @@ type Maintainers struct {
 	IsMaintainer   bool     `bson:"is_maintainer"`
 	IsAdmin        bool     `bson:"is_admin"`
 	SupportGroup   string   `bson:"support_group"`
+	Notes          string   `bson:"notes"`
 }
 
 // connect to the database
