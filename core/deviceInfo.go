@@ -21,7 +21,7 @@ func ParseDeviceInfo(files []string) (DeviceInfo, error) {
 	}
 
 	deviceDets := strings.Split(files[0], "-")
-	if len(deviceDets) < 9 || (strings.Contains(deviceDets[0], "FlamingoOS") && deviceDets[4] != "Official") {
+	if len(deviceDets) < 9 || !strings.Contains(deviceDets[0], "FlamingoOS") || deviceDets[4] != "Official" {
 		return deviceInfo, fmt.Errorf("invalid file. This isn't a flamingoOS file")
 	}
 
@@ -39,6 +39,9 @@ func ParseDeviceInfo(files []string) (DeviceInfo, error) {
 	for _, file := range files {
 		for _, buildFormat := range buildFormats {
 			if strings.Contains(file, buildFormat) {
+				if !strings.Contains(file, "FlamingoOS") || !strings.Contains(file, "Official") || !strings.Contains(file, "user") {
+					return deviceInfo, fmt.Errorf("invalid file. %s isn't a flamingoOS file", file)
+				}
 				fileName := strings.Split(file, "/")[len(strings.Split(file, "/"))-1]
 				uploadFolder := Branch + "/" + deviceInfo.DeviceName + "/" + deviceInfo.Flavour
 				uploadUrl := BaseUrl + uploadFolder + "/" + fileName
