@@ -10,29 +10,6 @@ import (
 	"github.com/Flamingo-OS/upload-bot/database"
 )
 
-// parses a given release request
-// request currently includes only a -n flag for extra notes
-func parseArgs(args []string) ([]string, string, error) {
-	var links []string = []string{}
-	var notes string = ""
-	for i := 0; i < len(args); i++ {
-		if args[i] == "-n" || args[i] == "--notes" {
-			if len(args) > i {
-				notes = args[i+1]
-				i += 1
-			} else {
-				return links, notes, fmt.Errorf("no notes provided")
-			}
-		} else {
-			links = append(links, args[i])
-		}
-	}
-	if len(links) == 0 {
-		return links, notes, fmt.Errorf("no links provided")
-	}
-	return links, notes, nil
-}
-
 // validates the release is indeed a flamingo OS file
 // also creates and pushes OTA file
 func validateRelease(fileNames []string, dumpPath string) (core.DeviceInfo, error) {

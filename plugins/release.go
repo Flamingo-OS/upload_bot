@@ -15,21 +15,15 @@ import (
 )
 
 func releaseHandler(b *gotgbot.Bot, ctx *ext.Context) error {
+	core.Log.Infoln("Recieved request to handle /release")
 	const bannerLink = "https://sourceforge.net/projects/kosp/files/banners/banner-01.png/download"
 	chat := ctx.EffectiveChat
-	core.Log.Infoln("Recieved request to handle /release")
-
-	links, notes, err := parseArgs(ctx.Args()[1:])
-	if err != nil {
-		core.Log.Errorln("Error while parsing args:", err)
-		_, err := b.SendMessage(chat.Id, fmt.Sprintf("Something went wrong while parsing your request: %v", err), &gotgbot.SendMessageOpts{})
-		return err
-	}
-
+	links := ctx.Args()[1:]
 	userId := ctx.EffectiveUser.Id
 	if ctx.Message.ReplyToMessage != nil && database.IsAdmin(userId) {
-		userId = ctx.Message.ReplyToMessage.From.Id
+		userId = ctx.Message.ReplyToMessage.From.Id // switch to replied user if admin
 	}
+
 	if !database.IsMaintainer(userId) {
 		_, err := b.SendMessage(chat.Id, "You are not a maintainer", &gotgbot.SendMessageOpts{})
 		return err
@@ -45,8 +39,8 @@ func releaseHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	core.CancelTasks.Insert(taskId.Uint64())
 	defer core.CancelTasks.Remove(taskId.Uint64())
 
-	var dumpPath string = fmt.Sprintf("Dumpster/%s/", taskId.String())
 	// create and delete dir after completion
+	var dumpPath string = fmt.Sprintf("Dumpster/%s/", taskId.String())
 	core.Log.Infoln("Creating directory:", dumpPath)
 	err = os.MkdirAll(dumpPath, os.ModePerm)
 	if err != nil {
@@ -147,6 +141,9 @@ func releaseHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	if err != nil {
 		core.Log.Errorln("Couldn't fetch support group", err)
 	}
+
+	//TODO: Add support for notes
+	notes := ""
 
 	if core.CancelTasks.GetCancelStatus(taskId.Uint64()) {
 		core.Log.Infoln("Release cancelled by user")
