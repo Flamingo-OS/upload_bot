@@ -147,6 +147,13 @@ func releaseHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		b.SendMessage(chat.Id, "Something went wrong while creating release", &gotgbot.SendMessageOpts{})
 		return err
 	}
+
+	err = core.CreateOTACommit(deviceInfo, dumpPath)
+	if err != nil {
+		b.SendMessage(chat.Id, "Something went wrong while pushing ota", &gotgbot.SendMessageOpts{})
+		return err
+	}
+
 	_, _ = b.SendPhoto(chat.Id, bannerLink, &gotgbot.SendPhotoOpts{
 		Caption:   msgTxt,
 		ParseMode: "Markdown",

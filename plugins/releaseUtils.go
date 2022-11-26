@@ -13,16 +13,8 @@ import (
 // validates the release is indeed a flamingo OS file
 // also creates and pushes OTA file
 func validateRelease(fileNames []string, dumpPath string) (core.DeviceInfo, error) {
-	deviceInfo, err := core.ParseDeviceInfo(fileNames)
-	if err != nil {
-		return core.DeviceInfo{}, err
-	}
-	core.Log.Info("Parsed device info:", deviceInfo)
-	err = core.CreateOTACommit(deviceInfo, dumpPath)
-	if err != nil {
-		return deviceInfo, err
-	}
-	return deviceInfo, err
+	core.Log.Info("Parsed device info with filenames ", fileNames)
+	return core.ParseDeviceInfo(fileNames)
 }
 
 func CreateReleaseText(deviceInfo core.DeviceInfo, maintainers []database.Maintainers, deviceSupport string, notes string) (string, error) {
