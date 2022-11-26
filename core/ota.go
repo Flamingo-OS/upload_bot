@@ -24,7 +24,7 @@ func CreateOtaJson(zipFilePath string, deviceInfo DeviceInfo, dumpPath string) (
 		Log.Error("Error while getting file stats:", err)
 		return OTA{}, err
 	}
-	a, err := UnzipFile(zipFilePath, strings.Trim(fileStat.Name(), ".zip"), dumpPath)
+	a, err := UnzipFile(zipFilePath, strings.Trim(fileStat.Name(), ".zip"), dumpPath, "META-INF/com/android/metadata")
 	if err != nil {
 		Log.Error("Error while unzipping file:", err)
 		return OTA{}, err
