@@ -87,7 +87,7 @@ func CreateOTACommit(deviceInfo DeviceInfo, dumpPath string) error {
 
 	formatTime := time.Now().Format("2006-01-02")
 
-	changeLog, _ := CreateChangelog(deviceInfo.DeviceName, false)
+	changeLog, _ := CreateChangelog(deviceInfo.DeviceName, deviceInfo.Flavour)
 	changelogPath = deviceInfo.DeviceName + "/" + deviceInfo.Flavour + "/" + "changelog_" + strings.ReplaceAll(formatTime, "-", "_")
 	ota, err := CreateOtaJson(deviceInfo.fullOtaPath, deviceInfo, dumpPath)
 	if err != nil {

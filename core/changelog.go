@@ -19,13 +19,9 @@ var repos map[string]string
 var deviceRepos map[string]string
 
 // find the last update date
-func findLastDate(device string, isVanilla bool) (time.Time, error) {
+func findLastDate(device string, flavour string) (time.Time, error) {
 	Log.Info("Finding last date for device", device)
-	buildType := "GApps"
-	if isVanilla {
-		buildType = "Vanilla"
-	}
-	apiUrl := fmt.Sprintf("https://raw.githubusercontent.com/%s/ota/main/%s/%s/ota.json", DeviceOrg, device, buildType)
+	apiUrl := fmt.Sprintf("https://raw.githubusercontent.com/%s/ota/main/%s/%s/ota.json", DeviceOrg, device, flavour)
 	req, err := http.NewRequest("GET", apiUrl, nil)
 	if err != nil {
 		Log.Error("Error while creating request: ", err)
@@ -306,11 +302,11 @@ func genChangelog(r map[string]string, ch *string) {
 }
 
 // Main handler.
-func CreateChangelog(deviceName string, isVanilla bool) (string, error) {
+func CreateChangelog(deviceName string, flavour string) (string, error) {
 	Log.Info("Creating changelog")
 	var wg sync.WaitGroup
 
-	date, err := findLastDate(deviceName, isVanilla)
+	date, err := findLastDate(deviceName, flavour)
 	if err != nil {
 		Log.Error("Error while finding last date: ", err)
 		return "Initial release", err
