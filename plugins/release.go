@@ -18,12 +18,8 @@ func releaseHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	const bannerLink = "https://sourceforge.net/projects/kosp/files/banners/banner-01.png/download"
 	chat := ctx.EffectiveChat
 	links := ctx.Args()[1:]
-	userId := ctx.EffectiveUser.Id
-	if ctx.Message.ReplyToMessage != nil && database.IsAdmin(userId) {
-		userId = ctx.Message.ReplyToMessage.From.Id // switch to replied user if admin
-	}
 
-	if !database.IsMaintainer(userId) {
+	if !database.IsMaintainer(ctx.EffectiveUser.Id) {
 		_, err := b.SendMessage(chat.Id, "You are not a maintainer", &gotgbot.SendMessageOpts{})
 		return err
 	}
@@ -130,7 +126,7 @@ func releaseHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		core.Log.Errorln("Couldn't fetch support group", err)
 	}
 
-	notes, err := database.GetNotes(userId)
+	notes, err := database.GetNotes(maintainers[0].UserId)
 	if err != nil {
 		core.Log.Errorln("Couldn't fetch notes", err)
 	}
