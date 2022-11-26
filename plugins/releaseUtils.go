@@ -12,9 +12,22 @@ import (
 
 // validates the release is indeed a flamingo OS file
 // also creates and pushes OTA file
-func validateRelease(fileNames []string, dumpPath string) (core.DeviceInfo, error) {
+func parseRelease(fileNames []string, dumpPath string) (core.DeviceInfo, error) {
 	core.Log.Info("Parsed device info with filenames ", fileNames)
 	return core.ParseDeviceInfo(fileNames)
+}
+
+func validateRelease(maintainers []database.Maintainers, userId int64) error {
+	isValidUser := database.IsAdmin(userId)
+	for _, maintainer := range maintainers {
+		if maintainer.UserId == userId {
+			isValidUser = true
+		}
+	}
+	if !isValidUser {
+		return fmt.Errorf("you aren't a maintainer of this device")
+	}
+	return nil
 }
 
 func CreateReleaseText(deviceInfo core.DeviceInfo, maintainers []database.Maintainers, deviceSupport string, notes string) (string, error) {

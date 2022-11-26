@@ -18,8 +18,9 @@ func releaseHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	const bannerLink = "https://sourceforge.net/projects/kosp/files/banners/banner-01.png/download"
 	chat := ctx.EffectiveChat
 	links := ctx.Args()[1:]
+	userId := ctx.EffectiveUser.Id
 
-	if !database.IsMaintainer(ctx.EffectiveUser.Id) {
+	if !database.IsMaintainer(userId) {
 		_, err := b.SendMessage(chat.Id, "You are not a maintainer", &gotgbot.SendMessageOpts{})
 		return err
 	}
@@ -80,10 +81,22 @@ func releaseHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	msgTxt = fmt.Sprintf("Finished Downloading ....\nValidating release...\nYou can cancel using `/cancel %d`", taskId.Uint64())
 	m.EditText(b, msgTxt, &gotgbot.EditMessageTextOpts{ParseMode: "markdown"})
 
-	deviceInfo, err := validateRelease(filePaths, dumpPath)
+	deviceInfo, err := parseRelease(filePaths, dumpPath)
 	if err != nil {
 		core.Log.Errorln(err)
 		b.SendMessage(chat.Id, fmt.Sprintf("Release failed due to: %s", err), &gotgbot.SendMessageOpts{})
+		return err
+	}
+	maintainers, err := database.GetMaintainer(deviceInfo.DeviceName)
+	if err != nil {
+		core.Log.Errorln(err)
+		b.SendMessage(chat.Id, "Something went wrong", &gotgbot.SendMessageOpts{})
+		return err
+	}
+	err = validateRelease(maintainers, userId)
+	if err != nil {
+		core.Log.Errorln(err)
+		b.SendMessage(chat.Id, fmt.Sprintf("Something went wrong: %v", err), &gotgbot.SendMessageOpts{})
 		return err
 	}
 
@@ -114,8 +127,8 @@ func releaseHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 
 		m.EditText(b, msgTxt, &gotgbot.EditMessageTextOpts{ParseMode: "markdown"})
 	}
-
-	maintainers, err := database.GetMaintainer(deviceInfo.DeviceName)
+	msgTxt = fmt.Sprintf("Done uploading\nCreating and pushing ota\nYou can cancel using `/cancel %d`", taskId.Uint64())
+	m.EditText(b, msgTxt, &gotgbot.EditMessageTextOpts{ParseMode: "markdown"})
 
 	if err != nil {
 		core.Log.Errorln("Couldn't fetch maintainers", err)
@@ -149,11 +162,17 @@ func releaseHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		b.SendMessage(chat.Id, "Something went wrong while pushing ota", &gotgbot.SendMessageOpts{})
 		return err
 	}
+	core.Log.Infoln("Sending in the final release post")
 
-	_, _ = b.SendPhoto(chat.Id, bannerLink, &gotgbot.SendPhotoOpts{
+	_, err = b.SendPhoto(chat.Id, bannerLink, &gotgbot.SendPhotoOpts{
 		Caption:   msgTxt,
 		ParseMode: "Markdown",
 	})
+	if err != nil {
+		core.Log.Errorln("Something went wrong due to ", err)
+		b.SendMessage(chat.Id, "Failed to create release post", &gotgbot.SendMessageOpts{})
+		return err
+	}
 	_, err = b.SendPhoto(core.UpdateChannelId, bannerLink, &gotgbot.SendPhotoOpts{
 		Caption:   msgTxt,
 		ParseMode: "Markdown",
