@@ -75,8 +75,8 @@ func CreateReleaseText(deviceInfo core.DeviceInfo, maintainers []database.Mainta
 
 	if notes != "" {
 		// avoid markdown issues. hack for now
-		notes = strings.ReplaceAll(notes, "*", "- ")
-		notes = strings.ReplaceAll(notes, "_", "- ")
+		notes = strings.ReplaceAll(notes, "**", "\\**")
+		notes = strings.ReplaceAll(notes, "_", "\\_")
 		msgTxt += fmt.Sprintf(`
 		-	Notes: 
 		%s`, notes)
